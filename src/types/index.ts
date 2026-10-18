@@ -9,21 +9,29 @@ export interface ProductVariant {
 }
 
 export interface FragranceNotes {
-  top: string;      // Hương đầu (ví dụ: Vỏ bưởi, Cam ngọt, Sả chanh)
-  middle: string;   // Hương giữa (ví dụ: Hoa lài, Hoa mộc, Phong lữ)
+  top: string;      // Hương đầu (ví dụ: Hoa oải hương, Cam ngọt, Sả chanh)
+  middle: string;   // Hương giữa (ví dụ: Hoa lài, Hoa mộc, Bạc hà)
   base: string;     // Hương cuối (ví dụ: Trầm hương, Gỗ tuyết tùng, Hổ phách)
+}
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  subtitle: string;
+  image: string;
 }
 
 export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'don-huong' | 'phoi-huong' | 'xong-phong' | 'massage';
+  category: string; // Cho phép danh mục động: 'thu-gian' | 'thanh-loc' | 'tap-trung' | 'phong-thuy' | ...
   categoryName: string;
   subtitle: string;
   description: string;
   story: string;
-  origin: string; // Nguồn gốc nguyên liệu (ví dụ: Hà Giang, Quảng Nam)
+  origin: string; // Nguồn gốc nguyên liệu (ví dụ: Đà Lạt, Bến Tre, Quảng Nam)
   extractionMethod: string; // Phương pháp chiết xuất (ví dụ: Chưng cất lôi cuốn hơi nước)
   image: string;
   gallery: string[];
@@ -74,6 +82,19 @@ export interface Order {
   paymentMethod: 'cod' | 'bank_transfer';
 }
 
+export type LeadStatus = 'new' | 'contacted' | 'ordered' | 'cancelled';
+
+export interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  interest?: string; // Nhu cầu: Thư giãn, Giấc ngủ, Xông phòng, Phong thủy, Kinh doanh...
+  message?: string;
+  createdAt: string;
+  status: LeadStatus;
+}
+
 export interface Article {
   id: string;
   title: string;
@@ -97,6 +118,8 @@ export interface SiteConfig {
   announcementText: string;
   hotline: string;
   zalo: string;
+  telegram: string;
+  facebook: string;
   email: string;
   address: string;
   distilleryAddress: string;

@@ -320,6 +320,36 @@
       "reviewCount": 46
     }
   ],
+  "categories": [
+    {
+      "id": "cat-01",
+      "name": "Tinh dầu Thư giãn",
+      "slug": "thu-gian",
+      "subtitle": "Xua tan căng thẳng, vỗ về giấc ngủ sâu",
+      "image": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "cat-02",
+      "name": "Tinh dầu Thanh lọc",
+      "slug": "thanh-loc",
+      "subtitle": "Thanh sạch không khí, kháng khuẩn tự nhiên",
+      "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "cat-03",
+      "name": "Tinh dầu Tập trung",
+      "slug": "tap-trung",
+      "subtitle": "Khơi nguồn cảm hứng, tăng cường tỉnh táo",
+      "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "cat-04",
+      "name": "Tinh dầu Phong thủy",
+      "slug": "phong-thuy",
+      "subtitle": "Chiêu tài sinh khí, an gia vượng tài",
+      "image": "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
   "orders": [
     {
       "id": "96930a79-beee-44cb-90f8-2edc65a21543",
@@ -344,6 +374,36 @@
       "total": 380000,
       "status": "processing",
       "paymentMethod": "cod"
+    }
+  ],
+  "leads": [
+    {
+      "id": "a1d17358-d49b-4fc1-bfff-f16d607250d7",
+      "name": "Chị Khánh Linh",
+      "phone": "0934567890",
+      "interest": "Ngủ ngon & Giảm căng thẳng",
+      "message": "Địa chỉ nhận mẫu thử: 45 Lê Duẩn, Hà Nội",
+      "createdAt": "2026-10-18T13:14:53.884Z",
+      "status": "new"
+    },
+    {
+      "id": "lead-01",
+      "name": "Chị Mai Lan",
+      "phone": "0912345678",
+      "email": "mailan.arch@gmail.com",
+      "interest": "Thư giãn & Khử mùi văn phòng",
+      "message": "Cần tư vấn bộ tinh dầu xông cho văn phòng kiến trúc khoảng 50m2.",
+      "createdAt": "2026-10-18T08:30:00.000Z",
+      "status": "new"
+    },
+    {
+      "id": "lead-02",
+      "name": "Anh Trần Hùng",
+      "phone": "0987654321",
+      "interest": "Tinh dầu ngủ ngon",
+      "message": "Mình bị mất ngủ lâu năm, muốn thử tinh dầu oải hương hoặc phối hương.",
+      "createdAt": "2026-10-17T15:20:00.000Z",
+      "status": "contacted"
     }
   ],
   "articles": [

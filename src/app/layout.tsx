@@ -4,11 +4,12 @@ import { CartProvider } from '@/context/CartContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
+import FloatingContactBubbles from '@/components/layout/FloatingContactBubbles';
 import { initialSiteConfig } from '@/data/initialData';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Nam Mộc Hương — Tinh Dầu Thiên Nhiên & Liệu Pháp Mùi Hương',
+    default: 'Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên',
     template: '%s | Nam Mộc Hương',
   },
   description: initialSiteConfig.seoDescription,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Nam Mộc Hương — Hơi Thở Thiên Nhiên Trong Từng Giọt Hương',
+    title: 'Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên',
     description: initialSiteConfig.seoDescription,
     url: 'https://nammochuong.com',
     siteName: 'Nam Mộc Hương',
@@ -62,9 +63,9 @@ export default function RootLayout({
     email: initialSiteConfig.email,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Số 48 Đường Thảo Mộc, Phường An Phú',
-      addressLocality: 'TP. Thủ Đức',
-      addressRegion: 'TP. Hồ Chí Minh',
+      streetAddress: 'Số 123 Đường Hoa Sen',
+      addressLocality: 'Hà Nội',
+      addressRegion: 'Hà Nội',
       addressCountry: 'VN',
     },
     sameAs: ['https://nammochuong.com'],
@@ -78,12 +79,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-ivory text-charcoal antialiased selection:bg-botanical selection:text-ivory">
+      <body className="min-h-screen flex flex-col bg-ivory text-charcoal antialiased selection:bg-botanical selection:text-ivory relative">
         <CartProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
           <CartDrawer />
+          <FloatingContactBubbles
+            hotline={initialSiteConfig.hotline}
+            zalo={initialSiteConfig.zalo}
+            telegram={initialSiteConfig.telegram}
+          />
         </CartProvider>
       </body>
     </html>

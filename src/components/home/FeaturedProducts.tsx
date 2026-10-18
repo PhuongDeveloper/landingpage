@@ -2,113 +2,143 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Product } from '@/types';
-import ProductCard from '@/components/product/ProductCard';
-import { ArrowRight } from 'lucide-react';
+import { formatVND } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Plus, ShoppingBag, Zap } from 'lucide-react';
+import QuickOrderModal from '@/components/product/QuickOrderModal';
+import { useCart } from '@/context/CartContext';
 
 interface FeaturedProductsProps {
   products: Product[];
 }
 
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'don-huong' | 'phoi-huong' | 'xong-phong' | 'massage'>('all');
+  const { addToCart } = useCart();
+  const [selectedProductForQuickOrder, setSelectedProductForQuickOrder] = useState<Product | null>(null);
 
-  const filteredProducts = activeFilter === 'all'
-    ? products
-    : products.filter((p) => p.category === activeFilter);
+  // Hiển thị 4 sản phẩm chính theo đúng ảnh mẫu
+  const displayProducts = products.slice(0, 4);
 
   return (
-    <section id="san-pham" className="py-20 lg:py-28 bg-ivory scroll-mt-20 border-t border-clay/60">
+    <section id="san-pham" className="py-16 sm:py-24 bg-ivory-50 relative border-t border-clay/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
-          <span className="text-xs uppercase tracking-[0.2em] text-earth font-bold block">
-            Tuyển Chọn Nam Mộc Hương
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-botanical-dark">
-            Tinh Dầu Thiên Nhiên Nguyên Chất
+        {/* Header matching reference image */}
+        <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+          <div className="inline-flex items-center gap-2.5 text-xs text-earth font-light tracking-widest uppercase">
+            <span className="w-6 h-[1px] bg-earth/60" />
+            <span>Sản phẩm nổi bật</span>
+            <span className="w-6 h-[1px] bg-earth/60" />
+          </div>
+
+          <h2 className="font-serif text-3xl sm:text-4xl font-normal text-botanical-dark">
+            Tinh hoa thiên nhiên, nâng tầm cuộc sống
           </h2>
-          <p className="text-sm text-charcoal/70">
-            Mỗi giọt tinh dầu là sự kết tinh của thảo mộc tự nhiên và sự tỉ mỉ trong từng giờ chưng cất chậm.
-          </p>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-          <button
-            type="button"
-            onClick={() => setActiveFilter('all')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              activeFilter === 'all'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Tất Cả ({products.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter('don-huong')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              activeFilter === 'don-huong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Đơn Hương
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter('phoi-huong')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              activeFilter === 'phoi-huong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Phối Hương (Blend)
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter('xong-phong')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              activeFilter === 'xong-phong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Xông Phòng & Kháng Khuẩn
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter('massage')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              activeFilter === 'massage'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Dầu Massage Thảo Mộc
-          </button>
+        {/* Product Carousel Grid with Arrows matching reference design */}
+        <div className="relative">
+          {/* Navigation Arrows on sides */}
+          <div className="hidden lg:flex items-center justify-between absolute top-1/2 -left-4 -right-4 -translate-y-1/2 pointer-events-none z-20">
+            <Link
+              href="/san-pham"
+              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xs text-botanical shadow-md flex items-center justify-center pointer-events-auto hover:bg-botanical hover:text-white transition-all -translate-x-2"
+              aria-label="Xem sản phẩm trước"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Link>
+            <Link
+              href="/san-pham"
+              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xs text-botanical shadow-md flex items-center justify-center pointer-events-auto hover:bg-botanical hover:text-white transition-all translate-x-2"
+              aria-label="Xem sản phẩm tiếp theo"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Link>
+          </div>
+
+          {/* 4 Featured Products Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {displayProducts.map((p) => {
+              const defaultVariant = p.variants[0];
+              const price = defaultVariant?.salePrice || defaultVariant?.price || 0;
+
+              return (
+                <div
+                  key={p.id}
+                  className="group bg-white rounded-2xl overflow-hidden border border-clay/80 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                >
+                  {/* Image Frame */}
+                  <div className="relative aspect-[4/4] overflow-hidden bg-ivory-50 p-4">
+                    <Link href={`/san-pham/${p.slug}`}>
+                      <Image
+                        src={p.image}
+                        alt={p.name}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                    </Link>
+
+                    {/* Quick Order Button overlaid on image */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedProductForQuickOrder(p)}
+                      className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-botanical/80 hover:bg-botanical text-white flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                      title="Đặt nhanh 1 bước"
+                      aria-label={`Đặt nhanh ${p.name}`}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Content details matching reference text */}
+                  <div className="p-4 space-y-2">
+                    <Link href={`/san-pham/${p.slug}`}>
+                      <h3 className="font-serif font-semibold text-base text-botanical-dark group-hover:text-botanical transition-colors">
+                        {p.name}
+                      </h3>
+                    </Link>
+                    <p className="text-xs text-charcoal/60 leading-snug line-clamp-1">
+                      {p.subtitle}
+                    </p>
+
+                    <div className="pt-2 flex items-center justify-between border-t border-clay/40 text-xs">
+                      <span className="font-serif font-bold text-botanical text-sm">
+                        {formatVND(price)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProductForQuickOrder(p)}
+                        className="text-[11px] font-semibold text-earth hover:text-botanical flex items-center gap-1 bg-ivory px-2.5 py-1 rounded-md border border-clay/60"
+                      >
+                        <Zap className="w-3 h-3 text-gold fill-current" />
+                        <span>Mua ngay</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        {/* View All Button */}
-        <div className="text-center mt-12 pt-8">
+        {/* View all link */}
+        <div className="text-center mt-10">
           <Link
             href="/san-pham"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white hover:bg-clay/50 text-botanical border border-botanical/40 font-semibold text-xs tracking-wider transition-all shadow-xs hover:shadow-sm"
+            className="inline-flex items-center text-xs font-semibold text-botanical hover:underline tracking-wider"
           >
-            <span>Xem Đầy Đủ Danh Mục Sản Phẩm</span>
-            <ArrowRight className="w-4 h-4" />
+            Khám phá toàn bộ {products.length} sản phẩm tinh dầu →
           </Link>
         </div>
       </div>
+
+      {/* Quick Order 1-Step Modal */}
+      <QuickOrderModal
+        product={selectedProductForQuickOrder}
+        isOpen={Boolean(selectedProductForQuickOrder)}
+        onClose={() => setSelectedProductForQuickOrder(null)}
+      />
     </section>
   );
 }

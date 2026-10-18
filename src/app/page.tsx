@@ -1,28 +1,26 @@
 import React from 'react';
 import Hero from '@/components/home/Hero';
-import BrandIntro from '@/components/home/BrandIntro';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import BotanicalStory from '@/components/home/BotanicalStory';
 import ProductRitual from '@/components/home/ProductRitual';
-import BrandValues from '@/components/home/BrandValues';
-import Testimonials from '@/components/home/Testimonials';
-import JournalSection from '@/components/home/JournalSection';
-import NewsletterSection from '@/components/home/NewsletterSection';
-import { getProducts, getArticles, getSiteConfig } from '@/lib/storage';
+import SocialProofAndArticles from '@/components/home/SocialProofAndArticles';
+import LeadCaptureSection from '@/components/home/LeadCaptureSection';
+import { getProducts, getArticles, getSiteConfig, getCategories } from '@/lib/storage';
 
-export const revalidate = 60; // ISR 60s
+export const revalidate = 60;
 
 export default async function HomePage() {
-  const [products, articles, siteConfig] = await Promise.all([
+  const [products, articles, siteConfig, categories] = await Promise.all([
     getProducts(),
     getArticles(),
     getSiteConfig(),
+    getCategories(),
   ]);
 
   return (
     <>
-      {/* Section B — Hero */}
+      {/* Hero Section (2D Cinematic) */}
       <Hero
         headline={siteConfig.heroHeadline}
         subheadline={siteConfig.heroSubheadline}
@@ -30,32 +28,23 @@ export default async function HomePage() {
         ctaLink={siteConfig.heroCtaLink}
       />
 
-      {/* Section C — Brand Introduction */}
-      <BrandIntro />
+      {/* Danh mục sản phẩm: Khám phá thế giới tinh dầu */}
+      <CategoryShowcase categories={categories} />
 
-      {/* Section D — Product Categories */}
-      <CategoryShowcase />
-
-      {/* Section E — Featured Products */}
+      {/* Sản phẩm nổi bật: Tinh hoa thiên nhiên, nâng tầm cuộc sống */}
       <FeaturedProducts products={products} />
 
-      {/* Section F — Botanical Story */}
+      {/* Câu chuyện thương hiệu: Hành trình mang hương thiên nhiên vào từng khoảnh khắc sống */}
       <BotanicalStory />
 
-      {/* Section G — Product Ritual / How to use */}
+      {/* Cách sử dụng: Tinh dầu – đơn giản mà hiệu quả */}
       <ProductRitual />
 
-      {/* Section H — Brand Values */}
-      <BrandValues />
+      {/* Form lấy data khách hàng & đăng ký tư vấn */}
+      <LeadCaptureSection />
 
-      {/* Section I — Testimonials */}
-      <Testimonials />
-
-      {/* Section J — Journal / Blog */}
-      <JournalSection articles={articles} />
-
-      {/* Section Newsletter */}
-      <NewsletterSection />
+      {/* Khách hàng nói gì & Bài viết gần đây */}
+      <SocialProofAndArticles articles={articles} />
     </>
   );
 }

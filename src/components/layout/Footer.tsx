@@ -1,123 +1,183 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Compass, Sparkles, HeartHandshake } from 'lucide-react';
+import { Phone, Mail, MapPin, ArrowRight, Facebook, Youtube, Linkedin, Instagram, CheckCircle2 } from 'lucide-react';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) {
+      setSubmitted(true);
+      setEmail('');
+      setTimeout(() => setSubmitted(false), 3000);
+    }
+  };
+
   return (
-    <footer className="bg-botanical-forest text-ivory/80 pt-16 pb-12 border-t border-botanical-dark">
+    <footer id="lien-he" className="bg-botanical-forest text-ivory/80 pt-16 pb-8 border-t border-botanical-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-botanical-light/20">
-          {/* Brand Column */}
-          <div className="lg:col-span-2 space-y-4">
-            <span className="font-serif text-2xl font-bold tracking-tight text-ivory block">
-              NAM MỘC HƯƠNG
-            </span>
-            <p className="text-sm leading-relaxed text-ivory/70 max-w-sm">
-              Tinh dầu thiên nhiên nguyên chất chưng cất từ thảo mộc bản địa Việt Nam. Chúng tôi lưu giữ năng lượng thuần khiết của cây cỏ, nâng niu không gian sống và mang lại sự an lành cho thân tâm.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 pb-12 border-b border-botanical-light/20">
+          {/* Column 1: Brand & Socials */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center text-gold">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" stroke="currentColor" strokeWidth="1">
+                  <path d="M12 2C12 2 8 8 8 13C8 16 10 18 12 18C14 18 16 16 16 13C16 8 12 2 12 2Z" />
+                  <path d="M6 13C6 11 7 8 7 8C7 8 3 11 3 14C3 17 5.5 19 8 19C10.5 19 9 16 9 16C7 16 6 15 6 13Z" opacity="0.8" />
+                  <path d="M18 13C18 11 17 8 17 8C17 8 21 11 21 14C21 17 18.5 19 16 19C13.5 19 15 16 15 16C17 16 18 15 18 13Z" opacity="0.8" />
+                </svg>
+              </div>
+              <span className="font-serif text-xl font-bold tracking-tight text-ivory">
+                NAM MỘC HƯƠNG
+              </span>
+            </Link>
+
+            <p className="text-xs text-ivory/70 leading-relaxed">
+              Tinh dầu thiên nhiên – Cho cuộc sống an lành
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <span className="inline-flex items-center gap-1.5 text-xs text-gold bg-botanical/60 px-3 py-1 rounded-full border border-gold/30">
-                <Sparkles className="w-3.5 h-3.5" />
-                100% Thuần Tự Nhiên
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-xs text-ivory/90 bg-botanical/60 px-3 py-1 rounded-full border border-clay/20">
-                <HeartHandshake className="w-3.5 h-3.5" />
-                Bản Địa Bền Vững
-              </span>
+
+            {/* Social Icons matching reference image */}
+            <div className="flex items-center space-x-3 pt-2">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-botanical/60 hover:bg-gold hover:text-botanical flex items-center justify-center text-ivory transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-botanical/60 hover:bg-gold hover:text-botanical flex items-center justify-center text-ivory transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-botanical/60 hover:bg-gold hover:text-botanical flex items-center justify-center text-ivory transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-botanical/60 hover:bg-gold hover:text-botanical flex items-center justify-center text-ivory transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Column 2: Liên hệ với chúng tôi */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-ivory uppercase tracking-wider font-sans">
-              Bộ Sưu Tập
+            <h4 className="text-sm font-semibold text-ivory font-sans">
+              Liên hệ với chúng tôi
             </h4>
-            <ul className="space-y-2 text-sm text-ivory/70">
-              <li>
-                <Link href="/san-pham?category=don-huong" className="hover:text-gold transition-colors">
-                  Tinh Dầu Đơn Hương
-                </Link>
+            <ul className="space-y-2.5 text-xs text-ivory/70 leading-relaxed">
+              <li className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-gold flex-shrink-0" />
+                <a href="tel:0968123456" className="hover:text-gold transition-colors font-medium">
+                  0968 123 456
+                </a>
               </li>
-              <li>
-                <Link href="/san-pham?category=phoi-huong" className="hover:text-gold transition-colors">
-                  Tinh Dầu Phối Hương (Blend)
-                </Link>
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-gold flex-shrink-0" />
+                <a href="mailto:hello@nammochuong.com" className="hover:text-gold transition-colors">
+                  hello@nammochuong.com
+                </a>
               </li>
-              <li>
-                <Link href="/san-pham?category=xong-phong" className="hover:text-gold transition-colors">
-                  Tinh Dầu Xông Phòng
-                </Link>
-              </li>
-              <li>
-                <Link href="/san-pham?category=massage" className="hover:text-gold transition-colors">
-                  Dầu Massage Thảo Mộc
-                </Link>
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
+                <span>Số 123 Đường Hoa Sen, Hà Nội</span>
               </li>
             </ul>
           </div>
 
-          {/* Navigation & Story */}
+          {/* Column 3: Hỗ trợ khách hàng */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-ivory uppercase tracking-wider font-sans">
-              Về Chúng Tôi
+            <h4 className="text-sm font-semibold text-ivory font-sans">
+              Hỗ trợ khách hàng
             </h4>
-            <ul className="space-y-2 text-sm text-ivory/70">
+            <ul className="space-y-2 text-xs text-ivory/70">
               <li>
-                <Link href="/#cau-chuyen" className="hover:text-gold transition-colors">
-                  Hành Trình Chưng Cất
+                <Link href="/san-pham" className="hover:text-gold transition-colors">
+                  Chính sách mua hàng
+                </Link>
+              </li>
+              <li>
+                <Link href="/san-pham" className="hover:text-gold transition-colors">
+                  Chính sách đổi trả
                 </Link>
               </li>
               <li>
                 <Link href="/#nghi-thuc" className="hover:text-gold transition-colors">
-                  Nghi Thức Hương Sớm
+                  Hướng dẫn sử dụng
                 </Link>
               </li>
               <li>
                 <Link href="/kien-thuc" className="hover:text-gold transition-colors">
-                  Cẩm Nang Sống Lành
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-gold transition-colors">
-                  Cổng Quản Trị CMS
+                  Câu hỏi thường gặp
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Column 4: Đăng ký nhận tin */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-ivory uppercase tracking-wider font-sans">
-              Liên Hệ & Xưởng
+            <h4 className="text-sm font-semibold text-ivory font-sans">
+              Đăng ký nhận tin
             </h4>
-            <ul className="space-y-2.5 text-xs text-ivory/70 leading-relaxed">
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
-                <span>Số 48 Đường Thảo Mộc, P. An Phú, TP. Thủ Đức, TP. Hồ Chí Minh</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Compass className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
-                <span>Xưởng chưng cất: Xã Lộc Tân, Huyện Bảo Lâm, Tỉnh Lâm Đồng</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gold flex-shrink-0" />
-                <a href="tel:0988123456" className="hover:text-gold">0988 123 456 (Zalo hỗ trợ)</a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gold flex-shrink-0" />
-                <a href="mailto:chamsoc@nammochuong.com" className="hover:text-gold">chamsoc@nammochuong.com</a>
-              </li>
-            </ul>
+            <p className="text-xs text-ivory/70 leading-relaxed">
+              Cập nhật sản phẩm mới và ưu đãi đặc biệt
+            </p>
+
+            {submitted ? (
+              <div className="p-3 bg-botanical/60 border border-gold/40 text-gold rounded-xl text-xs flex items-center gap-2 animate-fade-in">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-gold" />
+                <span>Đã đăng ký nhận ưu đãi thành công!</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="relative mt-2">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập email của bạn"
+                  className="w-full pl-4 pr-12 py-3 rounded-full bg-botanical/50 border border-botanical-light/40 text-xs text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-gold"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gold hover:bg-gold-light text-botanical flex items-center justify-center transition-colors shadow-sm"
+                  aria-label="Gửi email"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
-        {/* Bottom Credits & Policies */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-ivory/50 gap-4">
-          <p>© {new Date().getFullYear()} Nam Mộc Hương. Bảo tồn giá trị hương thơm nguyên bản.</p>
-          <div className="flex items-center space-x-6">
-            <span>Chính sách đổi trả trong 7 ngày</span>
-            <span>Cam kết hoàn tiền nếu phát hiện hương liệu tổng hợp</span>
-          </div>
+        {/* Bottom Credits matching reference image */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-ivory/50 gap-2">
+          <p>© 2025 Nam Mộc Hương. All rights reserved.</p>
+          <p className="flex items-center gap-1.5 text-gold-light/70">
+            <span>🌿</span>
+            <span>Lan tỏa hương thơm – Gieo mầm an lành</span>
+          </p>
         </div>
       </div>
     </footer>

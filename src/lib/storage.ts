@@ -1,12 +1,20 @@
 import fs from 'fs';
 import path from 'path';
-import { Product, Order, Article, SiteConfig } from '@/types';
-import { initialProducts, initialArticles, initialSiteConfig } from '@/data/initialData';
+import { Product, Order, Article, SiteConfig, CategoryItem, Lead } from '@/types';
+import {
+  initialProducts,
+  initialArticles,
+  initialSiteConfig,
+  initialCategories,
+  initialLeads,
+} from '@/data/initialData';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 interface StoreData {
   products: Product[];
+  categories: CategoryItem[];
   orders: Order[];
+  leads: Lead[];
   articles: Article[];
   config: SiteConfig;
 }
@@ -14,12 +22,13 @@ interface StoreData {
 const DATA_DIR = path.join(process.cwd(), '.data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
 
-// Khởi tạo thư mục và file lưu trữ nếu chưa có
 function ensureLocalStore(): StoreData {
   if (typeof window !== 'undefined') {
     return {
       products: initialProducts,
+      categories: initialCategories,
       orders: [],
+      leads: initialLeads,
       articles: initialArticles,
       config: initialSiteConfig,
     };
@@ -33,7 +42,9 @@ function ensureLocalStore(): StoreData {
     if (!fs.existsSync(DATA_FILE)) {
       const initialData: StoreData = {
         products: initialProducts,
+        categories: initialCategories,
         orders: [],
+        leads: initialLeads,
         articles: initialArticles,
         config: initialSiteConfig,
       };
@@ -42,12 +53,22 @@ function ensureLocalStore(): StoreData {
     }
 
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return {
+      products: parsed.products || initialProducts,
+      categories: parsed.categories || initialCategories,
+      orders: parsed.orders || [],
+      leads: parsed.leads || initialLeads,
+      articles: parsed.articles || initialArticles,
+      config: parsed.config || initialSiteConfig,
+    };
   } catch (err) {
     console.error('Error accessing local store, using in-memory fallback:', err);
     return {
       products: initialProducts,
+      categories: initialCategories,
       orders: [],
+      leads: initialLeads,
       articles: initialArticles,
       config: initialSiteConfig,
     };
@@ -64,6 +85,33 @@ function writeLocalStore(data: StoreData) {
   } catch (err) {
     console.error('Error writing to local store:', err);
   }
+}
+
+// ---------------- CATEGORIES ----------------
+export async function getCategories(): Promise<CategoryItem[]> {
+  const store = ensureLocalStore();
+  return store.categories || initialCategories;
+}
+
+export async function saveCategory(category: CategoryItem): Promise<CategoryItem> {
+  const store = ensureLocalStore();
+  if (!store.categories) store.categories = initialCategories;
+  const index = store.categories.findIndex((c) => c.id === category.id || c.slug === category.slug);
+  if (index >= 0) {
+    store.categories[index] = category;
+  } else {
+    store.categories.push(category);
+  }
+  writeLocalStore(store);
+  return category;
+}
+
+export async function deleteCategory(id: string): Promise<boolean> {
+  const store = ensureLocalStore();
+  if (!store.categories) return false;
+  store.categories = store.categories.filter((c) => c.id !== id);
+  writeLocalStore(store);
+  return true;
 }
 
 // ---------------- PRODUCTS ----------------
@@ -135,6 +183,22 @@ export async function saveProduct(product: Product): Promise<Product> {
   }
 
   return product;
+}
+
+export async function deleteProduct(productId: string): Promise<boolean> {
+  const store = ensureLocalStore();
+  store.products = store.products.filter((p) => p.id !== productId);
+  writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('products').delete().eq('id', productId);
+    } catch (e) {
+      console.error('Supabase product delete failed:', e);
+    }
+  }
+
+  return true;
 }
 
 // ---------------- ORDERS ----------------
@@ -232,6 +296,34 @@ export async function updateOrderStatus(orderCode: string, status: Order['status
   return false;
 }
 
+// ---------------- LEADS / CUSTOMER DATA ----------------
+export async function getLeads(): Promise<Lead[]> {
+  const store = ensureLocalStore();
+  return (store.leads || []).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function createLead(lead: Lead): Promise<Lead> {
+  const store = ensureLocalStore();
+  if (!store.leads) store.leads = [];
+  store.leads.unshift(lead);
+  writeLocalStore(store);
+  return lead;
+}
+
+export async function updateLeadStatus(id: string, status: Lead['status']): Promise<boolean> {
+  const store = ensureLocalStore();
+  if (!store.leads) return false;
+  const lead = store.leads.find((l) => l.id === id);
+  if (lead) {
+    lead.status = status;
+    writeLocalStore(store);
+    return true;
+  }
+  return false;
+}
+
 // ---------------- SITE CONFIG ----------------
 export async function getSiteConfig(): Promise<SiteConfig> {
   if (isSupabaseConfigured && supabase) {
@@ -276,7 +368,7 @@ export async function saveSiteConfig(config: SiteConfig): Promise<SiteConfig> {
 // ---------------- ARTICLES ----------------
 export async function getArticles(): Promise<Article[]> {
   const store = ensureLocalStore();
-  return store.articles;
+  return store.articles || initialArticles;
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
