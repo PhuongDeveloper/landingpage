@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import FloatingContactBubbles from '@/components/layout/FloatingContactBubbles';
 import { initialSiteConfig } from '@/data/initialData';
+import { getSiteConfig } from '@/lib/storage';
 
 export const metadata: Metadata = {
   title: {
@@ -47,23 +48,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const siteConfig = await getSiteConfig();
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Nam Mộc Hương',
     url: 'https://nammochuong.com',
     logo: 'https://nammochuong.com/logo.png',
-    description: initialSiteConfig.seoDescription,
-    telephone: initialSiteConfig.hotline,
-    email: initialSiteConfig.email,
+    description: siteConfig.seoDescription,
+    telephone: siteConfig.hotline,
+    email: siteConfig.email,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Số 123 Đường Hoa Sen',
+      streetAddress: siteConfig.address,
       addressLocality: 'Hà Nội',
       addressRegion: 'Hà Nội',
       addressCountry: 'VN',
@@ -86,9 +89,9 @@ export default function RootLayout({
           <Footer />
           <CartDrawer />
           <FloatingContactBubbles
-            hotline={initialSiteConfig.hotline}
-            zalo={initialSiteConfig.zalo}
-            telegram={initialSiteConfig.telegram}
+            hotline={siteConfig.hotline}
+            zalo={siteConfig.zalo}
+            telegram={siteConfig.telegram}
           />
         </CartProvider>
       </body>

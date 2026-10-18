@@ -116,6 +116,9 @@ export interface SiteConfig {
   heroSubheadline: string;
   heroCtaText: string;
   heroCtaLink: string;
+  heroImage?: string;
+  heroBadge?: string;
+  heroBgImage?: string;
   announcementText: string;
   hotline: string;
   zalo: string;

@@ -1,63 +1,6 @@
 {
   "products": [
     {
-      "id": "nmh-01",
-      "name": "Tinh dầu oải hương",
-      "slug": "tinh-dau-oai-huong",
-      "category": "thu-gian",
-      "categoryName": "Tinh dầu Thư giãn",
-      "subtitle": "Thư giãn, giảm căng thẳng",
-      "description": "Chưng cất từ những nhành hoa oải hương (Lavender) tím ngát, mang lại nốt hương thảo mộc dịu dàng, xoa dịu các cơn căng thẳng thần kinh và giúp bạn dễ dàng chìm vào giấc ngủ an lành.",
-      "story": "Mỗi bông hoa oải hương được chọn lọc kỹ càng, chưng cất ở nhiệt độ kiểm soát dưới 95°C để giữ trọn nốt hương ngọt mát đặc trưng.",
-      "origin": "Đà Lạt & Cao nguyên Mộc Châu",
-      "extractionMethod": "Chưng cất lôi cuốn hơi nước áp suất thấp",
-      "image": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
-      "gallery": [
-        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80"
-      ],
-      "variants": [
-        {
-          "capacity": "10ml",
-          "price": 195000,
-          "salePrice": 175000,
-          "stock": 45,
-          "sku": "NMH-OH-10"
-        },
-        {
-          "capacity": "30ml",
-          "price": 420000,
-          "salePrice": 380000,
-          "stock": 30,
-          "sku": "NMH-OH-30"
-        },
-        {
-          "capacity": "50ml",
-          "price": 620000,
-          "stock": 15,
-          "sku": "NMH-OH-50"
-        }
-      ],
-      "notes": {
-        "top": "Hoa oải hương tươi, Cam thảo thoang thoảng",
-        "middle": "Hương thảo mộc dịu, Cúc La Mã",
-        "base": "Gỗ mộc ấm, Xạ hương thực vật"
-      },
-      "benefits": [
-        "Giúp thư giãn tinh thần sau những giờ làm việc mệt mỏi",
-        "Cải thiện chất lượng giấc ngủ sâu và ngon hơn",
-        "Khử mùi ẩm mốc, mang lại hương hoa dễ chịu cho phòng ngủ"
-      ],
-      "ritualGuide": [
-        "Nhỏ 3-5 giọt vào máy khuếch tán sương trước khi ngủ 30 phút.",
-        "Thoa 1 giọt lên góc gối hoặc vùng thái dương để giải tỏa căng thẳng."
-      ],
-      "isFeatured": true,
-      "isNew": false,
-      "rating": 4.9,
-      "reviewCount": 168
-    },
-    {
       "id": "nmh-02",
       "name": "Tinh dầu bạc hà",
       "slug": "tinh-dau-bac-ha",
@@ -270,13 +213,6 @@
   ],
   "categories": [
     {
-      "id": "cat-01",
-      "name": "Tinh dầu Thư giãn",
-      "slug": "thu-gian",
-      "subtitle": "Xua tan căng thẳng, vỗ về giấc ngủ sâu",
-      "image": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80"
-    },
-    {
       "id": "cat-02",
       "name": "Tinh dầu Thanh lọc",
       "slug": "thanh-loc",
@@ -298,8 +234,41 @@
       "image": "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "1ff79f0f-b4b0-4583-b84d-a1b7882dfce7",
+      "orderCode": "NMH-261018-4233",
+      "createdAt": "2026-10-18T15:51:26.034Z",
+      "customerName": "Test Customer",
+      "customerPhone": "0912345678",
+      "shippingAddress": "Hanoi",
+      "items": [
+        {
+          "productId": "nmh-02",
+          "name": "Tinh dầu bạc hà",
+          "capacity": "10ml",
+          "price": 145000,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 145000,
+      "shippingFee": 30000,
+      "total": 175000,
+      "status": "pending",
+      "paymentMethod": "cod"
+    }
+  ],
   "leads": [
+    {
+      "id": "565e8a99-9e47-4256-a3b7-98d06a178d0e",
+      "name": "Nguyen Test",
+      "phone": "0900000000",
+      "email": "test@gmail.com",
+      "interest": "Tư vấn",
+      "message": "Test lead",
+      "createdAt": "2026-10-18T15:51:25.570Z",
+      "status": "new"
+    },
     {
       "id": "lead-01",
       "name": "Chị Mai Lan",
@@ -363,7 +332,7 @@
     "brandTagline": "Tinh hoa từ thiên nhiên – Cho cuộc sống an lành",
     "heroHeadline": "Lan tỏa hương thơm\nThuần khiết từ thiên nhiên",
     "heroSubheadline": "Nam Mộc Hương – tinh hoa từ thiên nhiên, cho một cuộc sống an yên và cân bằng.",
-    "heroCtaText": "Khám phá sản phẩm",
+    "heroCtaText": "Khám phá sản phẩm ngay",
     "heroCtaLink": "#san-pham",
     "announcementText": "Tinh dầu thiên nhiên nguyên chất 100% • Miễn phí vận chuyển toàn quốc cho đơn hàng từ 499.000đ",
     "hotline": "0968 123 456",
@@ -377,6 +346,9 @@
     "standardShippingFee": 30000,
     "seoTitle": "Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên",
     "seoDescription": "Nam Mộc Hương – tinh dầu thiên nhiên nguyên chất chưng cất từ hoa oải hương, bạc hà, tràm trà, cam ngọt và trầm hương. Cho một cuộc sống an yên và cân bằng.",
-    "seoKeywords": "nam mộc hương, tinh dầu thiên nhiên, tinh dầu oải hương, tinh dầu bạc hà, tinh dầu tràm trà, tinh dầu cam ngọt, xông phòng thư giãn"
+    "seoKeywords": "nam mộc hương, tinh dầu thiên nhiên, tinh dầu oải hương, tinh dầu bạc hà, tinh dầu tràm trà, tinh dầu cam ngọt, xông phòng thư giãn",
+    "heroImage": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1000&q=85",
+    "heroBadge": "Tinh dầu thiên nhiên nguyên chất 100%",
+    "heroBgImage": ""
   }
 }

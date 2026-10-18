@@ -30,14 +30,19 @@ export async function POST(request: Request) {
     // Sanitize text inputs chống XSS
     const sanitizedConfig: SiteConfig = {
       ...body,
-      heroHeadline: body.heroHeadline.replace(/<[^>]*>?/gm, ''),
-      heroSubheadline: body.heroSubheadline.replace(/<[^>]*>?/gm, ''),
-      heroCtaText: body.heroCtaText.replace(/<[^>]*>?/gm, ''),
-      hotline: body.hotline.replace(/<[^>]*>?/gm, ''),
-      zalo: body.zalo.replace(/<[^>]*>?/gm, ''),
-      email: body.email.replace(/<[^>]*>?/gm, ''),
-      seoTitle: body.seoTitle.replace(/<[^>]*>?/gm, ''),
-      seoDescription: body.seoDescription.replace(/<[^>]*>?/gm, ''),
+      heroHeadline: (body.heroHeadline || '').replace(/<[^>]*>?/gm, ''),
+      heroSubheadline: (body.heroSubheadline || '').replace(/<[^>]*>?/gm, ''),
+      heroCtaText: (body.heroCtaText || '').replace(/<[^>]*>?/gm, ''),
+      heroCtaLink: (body.heroCtaLink || '#san-pham').trim(),
+      heroImage: (body.heroImage || '').trim(),
+      heroBadge: (body.heroBadge || '').replace(/<[^>]*>?/gm, '').trim(),
+      heroBgImage: (body.heroBgImage || '').trim(),
+      announcementText: (body.announcementText || '').replace(/<[^>]*>?/gm, ''),
+      hotline: (body.hotline || '').replace(/<[^>]*>?/gm, ''),
+      zalo: (body.zalo || '').replace(/<[^>]*>?/gm, ''),
+      email: (body.email || '').replace(/<[^>]*>?/gm, ''),
+      seoTitle: (body.seoTitle || '').replace(/<[^>]*>?/gm, ''),
+      seoDescription: (body.seoDescription || '').replace(/<[^>]*>?/gm, ''),
     };
 
     const saved = await saveSiteConfig(sanitizedConfig);

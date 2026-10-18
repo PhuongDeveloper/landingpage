@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { getProducts } from '@/lib/storage';
+import { getProducts, getCategories } from '@/lib/storage';
 import ProductCard from '@/components/product/ProductCard';
 import { ChevronRight, Filter } from 'lucide-react';
 
@@ -20,12 +20,17 @@ interface PageProps {
 }
 
 export default async function ProductsPage({ searchParams }: PageProps) {
-  const allProducts = await getProducts();
+  const [allProducts, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
   const selectedCategory = searchParams.category;
 
   const filteredProducts = selectedCategory
     ? allProducts.filter((p) => p.category === selectedCategory)
     : allProducts;
+
+  const activeCategoryObj = categories.find((c) => c.slug === selectedCategory);
 
   return (
     <div className="py-10 lg:py-16 bg-ivory min-h-screen">
@@ -41,7 +46,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             <>
               <ChevronRight className="w-3.5 h-3.5 text-charcoal/40" />
               <span className="text-earth font-medium capitalize">
-                {selectedCategory.replace('-', ' ')}
+                {activeCategoryObj?.name || selectedCategory.replace('-', ' ')}
               </span>
             </>
           )}
@@ -50,10 +55,11 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         {/* Page Header */}
         <div className="max-w-3xl mb-10 space-y-3">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-botanical-dark">
-            Bộ Sưu Tập Tinh Dầu Tự Nhiên
+            {activeCategoryObj ? activeCategoryObj.name : 'Bộ Sưu Tập Tinh Dầu Tự Nhiên'}
           </h1>
           <p className="text-sm text-charcoal/70 leading-relaxed">
-            Chắt lọc trọn vẹn tinh túy từ thảo mộc nhiệt đới bản địa. Giúp thanh lọc không gian sống, xoa dịu thần kinh và mang lại giấc ngủ an lành.
+            {activeCategoryObj?.subtitle ||
+              'Chắt lọc trọn vẹn tinh túy từ thảo mộc nhiệt đới bản địa. Giúp thanh lọc không gian sống, xoa dịu thần kinh và mang lại giấc ngủ an lành.'}
           </p>
         </div>
 
@@ -69,46 +75,23 @@ export default async function ProductsPage({ searchParams }: PageProps) {
           >
             Tất Cả ({allProducts.length})
           </Link>
-          <Link
-            href="/san-pham?category=don-huong"
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              selectedCategory === 'don-huong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Tinh Dầu Đơn Hương
-          </Link>
-          <Link
-            href="/san-pham?category=phoi-huong"
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              selectedCategory === 'phoi-huong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Tinh Dầu Phối Hương
-          </Link>
-          <Link
-            href="/san-pham?category=xong-phong"
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              selectedCategory === 'xong-phong'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Xông Phòng & Kháng Khuẩn
-          </Link>
-          <Link
-            href="/san-pham?category=massage"
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-              selectedCategory === 'massage'
-                ? 'bg-botanical text-ivory shadow-xs'
-                : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
-            }`}
-          >
-            Dầu Massage Thảo Mộc
-          </Link>
+          {categories.map((cat) => {
+            const count = allProducts.filter((p) => p.category === cat.slug).length;
+            const isActive = selectedCategory === cat.slug;
+            return (
+              <Link
+                key={cat.id || cat.slug}
+                href={`/san-pham?category=${cat.slug}`}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-botanical text-ivory shadow-xs'
+                    : 'bg-white text-charcoal/70 hover:bg-clay/60 border border-clay/80'
+                }`}
+              >
+                {cat.name} ({count})
+              </Link>
+            );
+          })}
         </div>
 
         {/* Products Grid */}

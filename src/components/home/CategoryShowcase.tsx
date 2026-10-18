@@ -26,9 +26,9 @@ export default function CategoryShowcase({ categories = initialCategories }: Cat
           </h2>
         </div>
 
-        {/* 4 Category Cards matching reference design */}
+        {/* Category Cards matching reference design */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.slice(0, 4).map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/san-pham?category=${cat.slug}`}

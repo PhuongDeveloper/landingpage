@@ -22,16 +22,26 @@ interface StoreData {
 const DATA_DIR = path.join(process.cwd(), '.data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
 
+// In-memory store singleton: acts as primary runtime source of truth.
+// Eliminates disk race conditions, EBUSY Windows file-locking on concurrent requests,
+// and ensures deleted products/categories/leads/orders NEVER get resurrected by fallback reads.
+let memoryStore: StoreData | null = null;
+
 function ensureLocalStore(): StoreData {
+  if (memoryStore) {
+    return memoryStore;
+  }
+
   if (typeof window !== 'undefined') {
-    return {
-      products: initialProducts,
-      categories: initialCategories,
+    memoryStore = {
+      products: [],
+      categories: [],
       orders: [],
-      leads: initialLeads,
-      articles: initialArticles,
+      leads: [],
+      articles: [],
       config: initialSiteConfig,
     };
+    return memoryStore;
   }
 
   try {
@@ -41,68 +51,84 @@ function ensureLocalStore(): StoreData {
 
     if (!fs.existsSync(DATA_FILE)) {
       const initialData: StoreData = {
-        products: initialProducts,
-        categories: initialCategories,
+        products: [...initialProducts],
+        categories: [...initialCategories],
         orders: [],
-        leads: initialLeads,
-        articles: initialArticles,
-        config: initialSiteConfig,
+        leads: [...initialLeads],
+        articles: [...initialArticles],
+        config: { ...initialSiteConfig },
       };
       fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-      return initialData;
+      memoryStore = initialData;
+      return memoryStore;
     }
 
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
-    return {
-      products: Array.isArray(parsed.products) ? parsed.products : initialProducts,
-      categories: Array.isArray(parsed.categories) ? parsed.categories : initialCategories,
+    memoryStore = {
+      products: Array.isArray(parsed.products) ? parsed.products : [],
+      categories: Array.isArray(parsed.categories) ? parsed.categories : [],
       orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-      leads: Array.isArray(parsed.leads) ? parsed.leads : initialLeads,
-      articles: Array.isArray(parsed.articles) ? parsed.articles : initialArticles,
-      config: parsed.config || initialSiteConfig,
+      leads: Array.isArray(parsed.leads) ? parsed.leads : [],
+      articles: Array.isArray(parsed.articles) ? parsed.articles : [],
+      config: parsed.config || { ...initialSiteConfig },
     };
+    return memoryStore;
   } catch (err) {
-    console.error('Error accessing local store, using in-memory fallback:', err);
-    return {
-      products: initialProducts,
-      categories: initialCategories,
-      orders: [],
-      leads: initialLeads,
-      articles: initialArticles,
-      config: initialSiteConfig,
-    };
+    console.error('Error reading local store from disk:', err);
+    if (!memoryStore) {
+      memoryStore = {
+        products: [...initialProducts],
+        categories: [...initialCategories],
+        orders: [],
+        leads: [...initialLeads],
+        articles: [...initialArticles],
+        config: { ...initialSiteConfig },
+      };
+    }
+    return memoryStore;
   }
 }
 
-function writeLocalStore(data: StoreData) {
+function commitLocalStore(data: StoreData) {
+  memoryStore = data;
   if (typeof window !== 'undefined') return;
+
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Error writing to local store:', err);
+    console.error('Error writing local store to disk:', err);
   }
 }
 
 // ---------------- CATEGORIES ----------------
 export async function getCategories(): Promise<CategoryItem[]> {
   const store = ensureLocalStore();
-  return Array.isArray(store.categories) ? store.categories : initialCategories;
+  return Array.isArray(store.categories) ? store.categories : [];
 }
 
 export async function saveCategory(category: CategoryItem): Promise<CategoryItem> {
   const store = ensureLocalStore();
-  if (!Array.isArray(store.categories)) store.categories = [...initialCategories];
-  const index = store.categories.findIndex((c) => c.id === category.id || c.slug === category.slug);
+  if (!Array.isArray(store.categories)) store.categories = [];
+
+  const cleanId = String(category.id).trim().toLowerCase();
+  const cleanSlug = String(category.slug).trim().toLowerCase();
+
+  const index = store.categories.findIndex((c) => {
+    const cId = c.id ? String(c.id).trim().toLowerCase() : '';
+    const cSlug = c.slug ? String(c.slug).trim().toLowerCase() : '';
+    return cId === cleanId || cSlug === cleanSlug;
+  });
+
   if (index >= 0) {
     store.categories[index] = category;
   } else {
     store.categories.push(category);
   }
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -125,10 +151,13 @@ export async function deleteCategory(idOrSlug: string): Promise<boolean> {
   const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
   if (!Array.isArray(store.categories)) return false;
-  store.categories = store.categories.filter(
-    (c) => c.id.toLowerCase() !== cleanTarget && c.slug.toLowerCase() !== cleanTarget
-  );
-  writeLocalStore(store);
+
+  store.categories = store.categories.filter((c) => {
+    const cId = c.id ? String(c.id).trim().toLowerCase() : '';
+    const cSlug = c.slug ? String(c.slug).trim().toLowerCase() : '';
+    return cId !== cleanTarget && cSlug !== cleanTarget;
+  });
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -146,7 +175,7 @@ export async function getProducts(): Promise<Product[]> {
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase.from('products').select('*');
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data.map((item) => ({
           ...item,
           categoryName: item.category_name,
@@ -162,24 +191,40 @@ export async function getProducts(): Promise<Product[]> {
   }
 
   const store = ensureLocalStore();
-  return Array.isArray(store.products) ? store.products : initialProducts;
+  return Array.isArray(store.products) ? store.products : [];
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const products = await getProducts();
-  return products.find((p) => p.slug === slug || p.id === slug) || null;
+  const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
+  return (
+    products.find((p) => {
+      const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
+      const pId = p.id ? String(p.id).trim().toLowerCase() : '';
+      return pSlug === cleanSlug || pId === cleanSlug;
+    }) || null
+  );
 }
 
 export async function saveProduct(product: Product): Promise<Product> {
   const store = ensureLocalStore();
-  if (!Array.isArray(store.products)) store.products = [...initialProducts];
-  const index = store.products.findIndex((p) => p.id === product.id || p.slug === product.slug);
+  if (!Array.isArray(store.products)) store.products = [];
+
+  const cleanId = String(product.id).trim().toLowerCase();
+  const cleanSlug = String(product.slug).trim().toLowerCase();
+
+  const index = store.products.findIndex((p) => {
+    const pId = p.id ? String(p.id).trim().toLowerCase() : '';
+    const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
+    return pId === cleanId || pSlug === cleanSlug;
+  });
+
   if (index >= 0) {
     store.products[index] = product;
   } else {
     store.products.push(product);
   }
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -217,10 +262,13 @@ export async function deleteProduct(productIdOrSlug: string): Promise<boolean> {
   const cleanTarget = decodeURIComponent(productIdOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
   if (!Array.isArray(store.products)) return false;
-  store.products = store.products.filter(
-    (p) => p.id.toLowerCase() !== cleanTarget && p.slug.toLowerCase() !== cleanTarget
-  );
-  writeLocalStore(store);
+
+  store.products = store.products.filter((p) => {
+    const pId = p.id ? String(p.id).trim().toLowerCase() : '';
+    const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
+    return pId !== cleanTarget && pSlug !== cleanTarget;
+  });
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -276,14 +324,21 @@ export async function getOrders(): Promise<Order[]> {
 
 export async function getOrderByCode(code: string): Promise<Order | null> {
   const orders = await getOrders();
-  return orders.find((o) => o.orderCode === code || o.id === code) || null;
+  const clean = decodeURIComponent(code).trim().toLowerCase();
+  return (
+    orders.find((o) => {
+      const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
+      const oId = o.id ? String(o.id).trim().toLowerCase() : '';
+      return oCode === clean || oId === clean;
+    }) || null
+  );
 }
 
 export async function createOrder(order: Order): Promise<Order> {
   const store = ensureLocalStore();
   if (!Array.isArray(store.orders)) store.orders = [];
   store.orders.unshift(order);
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -314,10 +369,17 @@ export async function createOrder(order: Order): Promise<Order> {
 export async function updateOrderStatus(orderCode: string, status: Order['status']): Promise<boolean> {
   const store = ensureLocalStore();
   if (!Array.isArray(store.orders)) return false;
-  const order = store.orders.find((o) => o.orderCode === orderCode || o.id === orderCode);
+  const cleanCode = decodeURIComponent(orderCode).trim().toLowerCase();
+
+  const order = store.orders.find((o) => {
+    const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
+    const oId = o.id ? String(o.id).trim().toLowerCase() : '';
+    return oCode === cleanCode || oId === cleanCode;
+  });
+
   if (order) {
     order.status = status;
-    writeLocalStore(store);
+    commitLocalStore(store);
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -338,10 +400,13 @@ export async function deleteOrder(idOrCode: string): Promise<boolean> {
   const cleanTarget = decodeURIComponent(idOrCode).trim().toLowerCase();
   const store = ensureLocalStore();
   if (!Array.isArray(store.orders)) return false;
-  store.orders = store.orders.filter(
-    (o) => o.id.toLowerCase() !== cleanTarget && o.orderCode.toLowerCase() !== cleanTarget
-  );
-  writeLocalStore(store);
+
+  store.orders = store.orders.filter((o) => {
+    const oId = o.id ? String(o.id).trim().toLowerCase() : '';
+    const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
+    return oId !== cleanTarget && oCode !== cleanTarget;
+  });
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -357,7 +422,7 @@ export async function deleteOrder(idOrCode: string): Promise<boolean> {
 // ---------------- LEADS / CUSTOMER DATA ----------------
 export async function getLeads(): Promise<Lead[]> {
   const store = ensureLocalStore();
-  const leads = Array.isArray(store.leads) ? store.leads : initialLeads;
+  const leads = Array.isArray(store.leads) ? store.leads : [];
   return leads.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -367,7 +432,7 @@ export async function createLead(lead: Lead): Promise<Lead> {
   const store = ensureLocalStore();
   if (!Array.isArray(store.leads)) store.leads = [];
   store.leads.unshift(lead);
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -392,10 +457,16 @@ export async function createLead(lead: Lead): Promise<Lead> {
 export async function updateLeadStatus(id: string, status: Lead['status']): Promise<boolean> {
   const store = ensureLocalStore();
   if (!Array.isArray(store.leads)) return false;
-  const lead = store.leads.find((l) => l.id === id);
+  const cleanId = decodeURIComponent(id).trim().toLowerCase();
+
+  const lead = store.leads.find((l) => {
+    const lId = l.id ? String(l.id).trim().toLowerCase() : '';
+    return lId === cleanId;
+  });
+
   if (lead) {
     lead.status = status;
-    writeLocalStore(store);
+    commitLocalStore(store);
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -413,8 +484,12 @@ export async function deleteLead(id: string): Promise<boolean> {
   const cleanTarget = decodeURIComponent(id).trim().toLowerCase();
   const store = ensureLocalStore();
   if (!Array.isArray(store.leads)) return false;
-  store.leads = store.leads.filter((l) => l.id.toLowerCase() !== cleanTarget);
-  writeLocalStore(store);
+
+  store.leads = store.leads.filter((l) => {
+    const lId = l.id ? String(l.id).trim().toLowerCase() : '';
+    return lId !== cleanTarget;
+  });
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -451,7 +526,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 export async function saveSiteConfig(config: SiteConfig): Promise<SiteConfig> {
   const store = ensureLocalStore();
   store.config = config;
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -471,24 +546,40 @@ export async function saveSiteConfig(config: SiteConfig): Promise<SiteConfig> {
 // ---------------- ARTICLES ----------------
 export async function getArticles(): Promise<Article[]> {
   const store = ensureLocalStore();
-  return Array.isArray(store.articles) ? store.articles : initialArticles;
+  return Array.isArray(store.articles) ? store.articles : [];
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const articles = await getArticles();
-  return articles.find((a) => a.slug === slug || a.id === slug) || null;
+  const clean = decodeURIComponent(slug).trim().toLowerCase();
+  return (
+    articles.find((a) => {
+      const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
+      const aId = a.id ? String(a.id).trim().toLowerCase() : '';
+      return aSlug === clean || aId === clean;
+    }) || null
+  );
 }
 
 export async function saveArticle(article: Article): Promise<Article> {
   const store = ensureLocalStore();
-  if (!Array.isArray(store.articles)) store.articles = [...initialArticles];
-  const index = store.articles.findIndex((a) => a.id === article.id || a.slug === article.slug);
+  if (!Array.isArray(store.articles)) store.articles = [];
+
+  const cleanId = String(article.id).trim().toLowerCase();
+  const cleanSlug = String(article.slug).trim().toLowerCase();
+
+  const index = store.articles.findIndex((a) => {
+    const aId = a.id ? String(a.id).trim().toLowerCase() : '';
+    const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
+    return aId === cleanId || aSlug === cleanSlug;
+  });
+
   if (index >= 0) {
     store.articles[index] = article;
   } else {
     store.articles.unshift(article);
   }
-  writeLocalStore(store);
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
@@ -516,10 +607,13 @@ export async function deleteArticle(idOrSlug: string): Promise<boolean> {
   const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
   if (!Array.isArray(store.articles)) return false;
-  store.articles = store.articles.filter(
-    (a) => a.id.toLowerCase() !== cleanTarget && a.slug.toLowerCase() !== cleanTarget
-  );
-  writeLocalStore(store);
+
+  store.articles = store.articles.filter((a) => {
+    const aId = a.id ? String(a.id).trim().toLowerCase() : '';
+    const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
+    return aId !== cleanTarget && aSlug !== cleanTarget;
+  });
+  commitLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {

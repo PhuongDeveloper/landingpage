@@ -104,6 +104,9 @@ export default function AdminPage() {
   const prodFileInputRef = useRef<HTMLInputElement>(null);
   const catFileInputRef = useRef<HTMLInputElement>(null);
   const articleFileInputRef = useRef<HTMLInputElement>(null);
+  const heroBannerFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingHeroBanner, setUploadingHeroBanner] = useState(false);
+  const [savingConfig, setSavingConfig] = useState(false);
 
   // Check existing session
   useEffect(() => {
@@ -251,6 +254,25 @@ export default function AdminPage() {
       showToast('Có lỗi khi tải ảnh bìa bài viết');
     } finally {
       setUploadingArticleCover(false);
+    }
+  };
+
+  // Upload Hero Banner Image
+  const handleHeroBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingHeroBanner(true);
+    try {
+      const url = await uploadImageFile(file);
+      if (url && config) {
+        setConfig((prev) => (prev ? { ...prev, heroImage: url } : null));
+        showToast('Đã tải ảnh banner lên thành công!');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Có lỗi khi tải ảnh banner');
+    } finally {
+      setUploadingHeroBanner(false);
     }
   };
 
@@ -655,6 +677,7 @@ export default function AdminPage() {
   const handleSaveConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!config) return;
+    setSavingConfig(true);
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
@@ -662,10 +685,16 @@ export default function AdminPage() {
         body: JSON.stringify(config),
       });
       if (res.ok) {
-        showToast('Xuất bản nội dung thành công!');
+        showToast('Xuất bản nội dung & Banner thành công!');
+        await fetchData();
+      } else {
+        showToast('Có lỗi khi lưu cấu hình');
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi kết nối khi lưu cấu hình');
+    } finally {
+      setSavingConfig(false);
     }
   };
 
@@ -1862,94 +1891,344 @@ export default function AdminPage() {
         )}
 
         {/* ========================================= */}
-        {/* TAB 7: VISUAL CMS & CONFIG */}
+        {/* TAB 7: VISUAL CMS & BANNER CONFIG */}
         {/* ========================================= */}
         {activeTab === 'cms' && config && (
-          <form onSubmit={handleSaveConfig} className="bg-white p-6 sm:p-8 rounded-3xl border border-clay shadow-xs space-y-6 text-xs">
-            <div className="border-b border-clay pb-4">
-              <h2 className="font-serif text-xl font-bold text-botanical">Cấu Hình Giao Diện & Nội Dung Thương Hiệu</h2>
-              <p className="text-xs text-charcoal/60 mt-1">Chỉnh sửa thông điệp Hero banner, số Hotline và Zalo hiển thị trên web.</p>
+          <form onSubmit={handleSaveConfig} className="bg-white p-6 sm:p-8 rounded-3xl border border-clay shadow-xs space-y-8 text-xs">
+            <div className="border-b border-clay pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-botanical">
+                  Quản Trị Banner & Cấu Hình Website
+                </h2>
+                <p className="text-xs text-charcoal/60 mt-1">
+                  Chỉnh sửa trực tiếp hình ảnh Banner Hero, tiêu đề, nút bấm và thông tin thương hiệu hiển thị trên toàn hệ thống.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingConfig}
+                className="bg-botanical hover:bg-botanical-dark text-ivory px-6 py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all shrink-0 self-start sm:self-auto"
+              >
+                <Save className="w-4 h-4 text-gold" />
+                <span>{savingConfig ? 'Đang xuất bản...' : 'Xuất Bản Thay Đổi'}</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1 sm:col-span-2">
-                <label className="font-semibold text-charcoal">Tiêu đề chính Hero (Headline)</label>
-                <textarea
-                  rows={2}
-                  value={config.heroHeadline}
-                  onChange={(e) => setConfig({ ...config, heroHeadline: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
+            {/* KHU VỰC 1: BANNER HERO & HÌNH ẢNH CHÍNH TRANG CHỦ */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-1 border-b border-clay/60">
+                <ImageIcon className="w-4 h-4 text-botanical" />
+                <h3 className="font-serif font-bold text-sm sm:text-base text-botanical">
+                  1. Hình Ảnh Banner Hero & Khung Giới Thiệu
+                </h3>
               </div>
 
-              <div className="space-y-1 sm:col-span-2">
-                <label className="font-semibold text-charcoal">Dòng mô tả thương hiệu (Subheadline)</label>
-                <textarea
-                  rows={2}
-                  value={config.heroSubheadline}
-                  onChange={(e) => setConfig({ ...config, heroSubheadline: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
+              {/* Banner Live Preview & Upload Box */}
+              <div className="p-5 rounded-2xl bg-ivory-50 border border-clay flex flex-col md:flex-row gap-6 items-center">
+                {/* Live Preview Box */}
+                <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden bg-[#24372C] border-2 border-botanical/40 shadow-md shrink-0 flex items-center justify-center group">
+                  {config.heroImage ? (
+                    <img
+                      src={config.heroImage}
+                      alt="Banner Preview"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="text-center p-4 text-ivory/60 text-xs">
+                      <ImageIcon className="w-8 h-8 mx-auto mb-2 text-ivory/40" />
+                      Chưa có ảnh banner
+                    </div>
+                  )}
+                  <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-md font-mono">
+                    Xem trước thực tế
+                  </span>
+                </div>
+
+                {/* Banner Image Controls */}
+                <div className="flex-1 space-y-3 w-full">
+                  <div>
+                    <label className="font-semibold text-charcoal block mb-1">
+                      Đường dẫn ảnh Banner Hero (Chai tinh dầu / Banner chính trang chủ) *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={config.heroImage || ''}
+                        onChange={(e) => setConfig({ ...config, heroImage: e.target.value })}
+                        placeholder="https://images.unsplash.com/... hoặc link ảnh ImgBB"
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-clay bg-white text-xs outline-none focus:border-botanical"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => heroBannerFileInputRef.current?.click()}
+                        disabled={uploadingHeroBanner}
+                        className="px-4 py-2.5 bg-botanical hover:bg-botanical-dark text-ivory font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition-all shrink-0"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{uploadingHeroBanner ? 'Đang tải...' : 'Upload Ảnh'}</span>
+                      </button>
+                      <input
+                        ref={heroBannerFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHeroBannerUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-charcoal/60 pt-1">
+                    <span>Gợi ý:</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setConfig({
+                          ...config,
+                          heroImage:
+                            'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1000&q=85',
+                        })
+                      }
+                      className="text-botanical font-semibold underline hover:text-botanical-dark"
+                    >
+                      Khôi phục ảnh mẫu chai thủy tinh hổ phách gốc
+                    </button>
+                    <span>•</span>
+                    <span>Tỷ lệ chuẩn 1:1 (vuông) hoặc 4:5. Hỗ trợ JPG, PNG, WebP.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Headline & Banner Text Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">
+                    Nhãn phụ trang trọng trên Headline (Eyebrow Badge)
+                  </label>
+                  <input
+                    type="text"
+                    value={config.heroBadge || ''}
+                    onChange={(e) => setConfig({ ...config, heroBadge: e.target.value })}
+                    placeholder="Ví dụ: Tinh dầu thiên nhiên nguyên chất 100%"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-charcoal">Tiêu đề lớn Hero (Headline)</label>
+                    <span className="text-[11px] text-charcoal/50">Mẹo: Nhấn Enter để xuống dòng nghệ thuật</span>
+                  </div>
+                  <textarea
+                    rows={2}
+                    value={config.heroHeadline || ''}
+                    onChange={(e) => setConfig({ ...config, heroHeadline: e.target.value })}
+                    placeholder="Lan tỏa hương thơm&#10;Thuần khiết từ thiên nhiên"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none leading-relaxed font-serif text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">Dòng mô tả thương hiệu (Subheadline)</label>
+                  <textarea
+                    rows={2}
+                    value={config.heroSubheadline || ''}
+                    onChange={(e) => setConfig({ ...config, heroSubheadline: e.target.value })}
+                    placeholder="Nam Mộc Hương – tinh hoa từ thiên nhiên, cho một cuộc sống an yên và cân bằng."
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none leading-relaxed"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Chữ hiển thị trên Nút bấm (CTA Text)</label>
+                  <input
+                    type="text"
+                    value={config.heroCtaText || ''}
+                    onChange={(e) => setConfig({ ...config, heroCtaText: e.target.value })}
+                    placeholder="Khám phá sản phẩm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Đường dẫn liên kết Nút bấm (CTA Link)</label>
+                  <input
+                    type="text"
+                    value={config.heroCtaLink || ''}
+                    onChange={(e) => setConfig({ ...config, heroCtaLink: e.target.value })}
+                    placeholder="#san-pham hoặc /san-pham"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* KHU VỰC 2: THANH THÔNG BÁO ĐẦU TRANG */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-clay/60">
+                <Sliders className="w-4 h-4 text-botanical" />
+                <h3 className="font-serif font-bold text-sm sm:text-base text-botanical">
+                  2. Thanh Thông Báo Đầu Trang (Announcement Bar)
+                </h3>
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-charcoal">Hotline hiển thị</label>
+                <label className="font-semibold text-charcoal">
+                  Dòng chữ chạy thông báo ưu đãi / vận chuyển
+                </label>
                 <input
                   type="text"
-                  value={config.hotline}
-                  onChange={(e) => setConfig({ ...config, hotline: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-charcoal">Số Zalo liên hệ</label>
-                <input
-                  type="text"
-                  value={config.zalo}
-                  onChange={(e) => setConfig({ ...config, zalo: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-charcoal">Telegram Username (không dấu @)</label>
-                <input
-                  type="text"
-                  value={config.telegram}
-                  onChange={(e) => setConfig({ ...config, telegram: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-charcoal">Email liên hệ</label>
-                <input
-                  type="email"
-                  value={config.email}
-                  onChange={(e) => setConfig({ ...config, email: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div className="space-y-1 sm:col-span-2">
-                <label className="font-semibold text-charcoal">Địa chỉ phòng trưng bày</label>
-                <input
-                  type="text"
-                  value={config.address}
-                  onChange={(e) => setConfig({ ...config, address: e.target.value })}
+                  value={config.announcementText || ''}
+                  onChange={(e) => setConfig({ ...config, announcementText: e.target.value })}
+                  placeholder="Tinh dầu thiên nhiên nguyên chất 100% • Miễn phí vận chuyển toàn quốc cho đơn hàng từ 499.000đ"
                   className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-botanical hover:bg-botanical-dark text-ivory py-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
-            >
-              <Save className="w-4 h-4 text-gold" />
-              <span>Xuất Bản Thay Đổi (Publish)</span>
-            </button>
+            {/* KHU VỰC 3: THÔNG TIN LIÊN HỆ & TƯ VẤN */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-clay/60">
+                <Phone className="w-4 h-4 text-botanical" />
+                <h3 className="font-serif font-bold text-sm sm:text-base text-botanical">
+                  3. Kênh Tư Vấn & Liên Hệ Trực Tiếp (Bong Bóng Nổi & Footer)
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Hotline tư vấn hiển thị</label>
+                  <input
+                    type="text"
+                    value={config.hotline || ''}
+                    onChange={(e) => setConfig({ ...config, hotline: e.target.value })}
+                    placeholder="0968 123 456"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Số Zalo đặt hàng & tư vấn</label>
+                  <input
+                    type="text"
+                    value={config.zalo || ''}
+                    onChange={(e) => setConfig({ ...config, zalo: e.target.value })}
+                    placeholder="0968123456"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Telegram Username (không dấu @)</label>
+                  <input
+                    type="text"
+                    value={config.telegram || ''}
+                    onChange={(e) => setConfig({ ...config, telegram: e.target.value })}
+                    placeholder="nammochuong_support"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Email liên hệ hỗ trợ</label>
+                  <input
+                    type="email"
+                    value={config.email || ''}
+                    onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                    placeholder="hello@nammochuong.com"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">Địa chỉ Showroom / Phòng trưng bày</label>
+                  <input
+                    type="text"
+                    value={config.address || ''}
+                    onChange={(e) => setConfig({ ...config, address: e.target.value })}
+                    placeholder="Số 123 Đường Hoa Sen, Hà Nội"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">Địa chỉ Xưởng chưng cất dược liệu</label>
+                  <input
+                    type="text"
+                    value={config.distilleryAddress || ''}
+                    onChange={(e) => setConfig({ ...config, distilleryAddress: e.target.value })}
+                    placeholder="Xưởng chưng cất: Xã Lộc Tân, Huyện Bảo Lâm, Tỉnh Lâm Đồng"
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* KHU VỰC 4: CHÍNH SÁCH VẬN CHUYỂN & SEO */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-clay/60">
+                <Package className="w-4 h-4 text-botanical" />
+                <h3 className="font-serif font-bold text-sm sm:text-base text-botanical">
+                  4. Chính Sách Vận Chuyển & Cấu Hình SEO
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Đơn hàng tối thiểu miễn phí vận chuyển (VNĐ)</label>
+                  <input
+                    type="number"
+                    value={config.freeShippingThreshold || 499000}
+                    onChange={(e) => setConfig({ ...config, freeShippingThreshold: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-charcoal">Phí vận chuyển tiêu chuẩn toàn quốc (VNĐ)</label>
+                  <input
+                    type="number"
+                    value={config.standardShippingFee || 30000}
+                    onChange={(e) => setConfig({ ...config, standardShippingFee: Number(e.target.value) })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">Tiêu đề SEO website (Meta Title)</label>
+                  <input
+                    type="text"
+                    value={config.seoTitle || ''}
+                    onChange={(e) => setConfig({ ...config, seoTitle: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-charcoal">Mô tả SEO website (Meta Description)</label>
+                  <textarea
+                    rows={2}
+                    value={config.seoDescription || ''}
+                    onChange={(e) => setConfig({ ...config, seoDescription: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none leading-relaxed"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-4 border-t border-clay">
+              <button
+                type="submit"
+                disabled={savingConfig}
+                className="w-full bg-botanical hover:bg-botanical-dark text-ivory py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+              >
+                <Save className="w-4 h-4 text-gold" />
+                <span>
+                  {savingConfig ? 'Đang xuất bản toàn bộ nội dung...' : 'Xuất Bản Thay Đổi Toàn Hệ Thống (Publish)'}
+                </span>
+              </button>
+            </div>
           </form>
         )}
       </div>

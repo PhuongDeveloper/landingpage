@@ -11,6 +11,9 @@ interface HeroProps {
   subheadline?: string;
   ctaText?: string;
   ctaLink?: string;
+  heroImage?: string;
+  heroBadge?: string;
+  heroBgImage?: string;
 }
 
 export default function Hero({
@@ -18,6 +21,9 @@ export default function Hero({
   subheadline = 'Nam Mộc Hương – tinh hoa từ thiên nhiên, cho một cuộc sống an yên và cân bằng.',
   ctaText = 'Khám phá sản phẩm',
   ctaLink = '#san-pham',
+  heroImage = 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1000&q=85',
+  heroBadge = 'Tinh dầu thiên nhiên',
+  heroBgImage = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1920&q=85',
 }: HeroProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -51,7 +57,7 @@ export default function Hero({
       {/* Background Natural Forest Texture */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
-          src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1920&q=85"
+          src={heroBgImage}
           alt=""
           fill
           priority
@@ -77,7 +83,7 @@ export default function Hero({
             {/* Eyebrow with horizontal line markers matching reference */}
             <div className="inline-flex items-center gap-2.5 text-xs sm:text-sm text-ivory/80 font-light tracking-widest uppercase">
               <span className="w-8 h-[1px] bg-gold/70" />
-              <span>Tinh dầu thiên nhiên</span>
+              <span>{heroBadge}</span>
               <span className="w-8 h-[1px] bg-gold/70" />
             </div>
 
@@ -103,16 +109,16 @@ export default function Hero({
             </div>
           </div>
 
-          {/* Right Column: 2D Amber Bottle on Driftwood - SẠCH SẼ KHÔNG CÓ TEXT ĐÈ */}
+          {/* Right Column: 2D Amber Bottle / Main Banner Visual */}
           <div ref={bottleRef} className="lg:col-span-5 relative flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md aspect-[4/5] sm:aspect-[1/1] rounded-3xl overflow-hidden shadow-2xl border border-ivory/20">
+            <div className="relative w-full max-w-md aspect-[4/5] sm:aspect-[1/1] rounded-3xl overflow-hidden shadow-2xl border border-ivory/20 group">
               <Image
-                src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1000&q=85"
+                src={heroImage}
                 alt="Tinh dầu Nam Mộc Hương"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover object-center"
+                className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-radial-vignette from-transparent via-black/10 to-deep-forest/30 pointer-events-none" />
             </div>

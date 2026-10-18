@@ -26,6 +26,9 @@ export default async function HomePage() {
         subheadline={siteConfig.heroSubheadline}
         ctaText={siteConfig.heroCtaText}
         ctaLink={siteConfig.heroCtaLink}
+        heroImage={siteConfig.heroImage}
+        heroBadge={siteConfig.heroBadge}
+        heroBgImage={siteConfig.heroBgImage}
       />
 
       {/* 2. Danh mục sản phẩm: Khám phá thế giới tinh dầu */}

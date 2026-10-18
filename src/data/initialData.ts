@@ -38,6 +38,9 @@ export const initialSiteConfig: SiteConfig = {
   heroSubheadline: 'Nam Mộc Hương – tinh hoa từ thiên nhiên, cho một cuộc sống an yên và cân bằng.',
   heroCtaText: 'Khám phá sản phẩm',
   heroCtaLink: '#san-pham',
+  heroImage: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1000&q=85',
+  heroBadge: 'Tinh dầu thiên nhiên',
+  heroBgImage: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1920&q=85',
   announcementText: 'Tinh dầu thiên nhiên nguyên chất 100% • Miễn phí vận chuyển toàn quốc cho đơn hàng từ 499.000đ',
   hotline: '0968 123 456',
   zalo: '0968123456',
@@ -49,8 +52,8 @@ export const initialSiteConfig: SiteConfig = {
   freeShippingThreshold: 499000,
   standardShippingFee: 30000,
   seoTitle: 'Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên',
-  seoDescription: 'Nam Mộc Hương – tinh dầu thiên nhiên nguyên chất chưng cất từ hoa oải hương, bạc hà, tràm trà, cam ngọt và trầm hương. Cho một cuộc sống an yên và cân bằng.',
-  seoKeywords: 'nam mộc hương, tinh dầu thiên nhiên, tinh dầu oải hương, tinh dầu bạc hà, tinh dầu tràm trà, tinh dầu cam ngọt, xông phòng thư giãn',
+  seoDescription: 'Nam Mộc Hương – tinh dầu thiên nhiên nguyên chất, tinh hoa từ thảo mộc thiên nhiên. Cho một cuộc sống an yên và cân bằng.',
+  seoKeywords: 'nam mộc hương, tinh dầu thiên nhiên, tinh dầu nguyên chất, xông phòng thư giãn',
 };
 
 export const initialProducts: Product[] = [

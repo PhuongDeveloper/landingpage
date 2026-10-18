@@ -56,7 +56,12 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
             </Link>
           </div>
 
-          {/* 4 Featured Products Cards */}
+        {/* Featured Products Cards */}
+        {displayProducts.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-clay/60 max-w-md mx-auto text-sm text-charcoal/60">
+            Chưa có sản phẩm nào được hiển thị.
+          </div>
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayProducts.map((p) => {
               const defaultVariant = p.variants[0];
@@ -120,6 +125,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
               );
             })}
           </div>
+        )}
         </div>
 
         {/* View all link */}
