@@ -15,7 +15,9 @@ interface QuickOrderModalProps {
 
 export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrderModalProps) {
   const router = useRouter();
-  const [selectedCapacity, setSelectedCapacity] = useState<ProductCapacity>('10ml');
+  const [selectedCapacity, setSelectedCapacity] = useState<ProductCapacity>(
+    product?.variants[0]?.capacity || '10ml'
+  );
   const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -24,7 +26,15 @@ export default function QuickOrderModal({ product, isOpen, onClose }: QuickOrder
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Sync capacity when product changes
+  React.useEffect(() => {
+    if (product && product.variants?.length > 0) {
+      setSelectedCapacity(product.variants[0].capacity);
+    }
+  }, [product]);
+
   if (!isOpen || !product) return null;
+
 
   const currentVariant =
     product.variants.find((v) => v.capacity === selectedCapacity) || product.variants[0];

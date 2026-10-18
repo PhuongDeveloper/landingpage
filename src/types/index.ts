@@ -1,7 +1,8 @@
-export type ProductCapacity = '10ml' | '30ml' | '50ml' | '100ml';
+export type ProductCapacity = string;
 
 export interface ProductVariant {
   capacity: ProductCapacity;
+
   price: number;
   salePrice?: number;
   stock: number;

@@ -71,10 +71,15 @@ export default function AdminPage() {
   const [prodTopNote, setProdTopNote] = useState('');
   const [prodMidNote, setProdMidNote] = useState('');
   const [prodBaseNote, setProdBaseNote] = useState('');
-  const [price10ml, setPrice10ml] = useState('180000');
-  const [salePrice10ml, setSalePrice10ml] = useState('160000');
-  const [stock10ml, setStock10ml] = useState('50');
+
+  // Dynamic variants state (hỗ trợ nhiều dung tích: 10ml, 30ml, 50ml, v.v...)
+  const [variantsList, setVariantsList] = useState<
+    Array<{ capacity: string; price: string; salePrice: string; stock: string }>
+  >([
+    { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+  ]);
   const [uploadingImage, setUploadingImage] = useState(false);
+
 
   // Category Modal state
   const [showCatModal, setShowCatModal] = useState(false);
@@ -240,6 +245,50 @@ export default function AdminPage() {
     }
   };
 
+  // Variant helpers
+  const handleAddVariant = (defaultCap = '') => {
+    let nextCap = defaultCap;
+    if (!nextCap) {
+      const existingCaps = variantsList.map((v) => v.capacity.toLowerCase().trim());
+      if (!existingCaps.includes('10ml')) nextCap = '10ml';
+      else if (!existingCaps.includes('30ml')) nextCap = '30ml';
+      else if (!existingCaps.includes('50ml')) nextCap = '50ml';
+      else if (!existingCaps.includes('100ml')) nextCap = '100ml';
+      else nextCap = `${(variantsList.length + 1) * 10}ml`;
+    }
+
+    // Nếu đã có capacity này thì không thêm trùng
+    if (defaultCap && variantsList.some((v) => v.capacity.toLowerCase().trim() === defaultCap.toLowerCase().trim())) {
+      showToast(`Dung tích ${defaultCap} đã có trong danh sách!`);
+      return;
+    }
+
+    setVariantsList((prev) => [
+      ...prev,
+      { capacity: nextCap, price: '', salePrice: '', stock: '50' },
+    ]);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    if (variantsList.length <= 1) {
+      showToast('Sản phẩm phải có ít nhất 1 mức dung tích / giá bán');
+      return;
+    }
+    setVariantsList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateVariant = (
+    index: number,
+    field: 'capacity' | 'price' | 'salePrice' | 'stock',
+    value: string
+  ) => {
+    setVariantsList((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
   // Open Edit Product Modal
   const openEditProduct = (p: Product) => {
     setEditingProductId(p.id);
@@ -254,9 +303,21 @@ export default function AdminPage() {
     setProdTopNote(p.notes?.top || '');
     setProdMidNote(p.notes?.middle || '');
     setProdBaseNote(p.notes?.base || '');
-    setPrice10ml(p.variants[0]?.price ? String(p.variants[0].price) : '180000');
-    setSalePrice10ml(p.variants[0]?.salePrice ? String(p.variants[0].salePrice) : '');
-    setStock10ml(p.variants[0]?.stock ? String(p.variants[0].stock) : '50');
+
+    if (p.variants && p.variants.length > 0) {
+      setVariantsList(
+        p.variants.map((v) => ({
+          capacity: v.capacity,
+          price: String(v.price),
+          salePrice: v.salePrice ? String(v.salePrice) : '',
+          stock: String(v.stock),
+        }))
+      );
+    } else {
+      setVariantsList([
+        { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+      ]);
+    }
     setShowProductModal(true);
   };
 
@@ -274,19 +335,39 @@ export default function AdminPage() {
     setProdTopNote('');
     setProdMidNote('');
     setProdBaseNote('');
-    setPrice10ml('180000');
-    setSalePrice10ml('160000');
-    setStock10ml('50');
+    setVariantsList([
+      { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+    ]);
     setShowProductModal(true);
   };
 
   // Save Product (Create or Update)
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!prodName.trim()) return;
+    if (!prodName.trim()) {
+      showToast('Vui lòng nhập tên sản phẩm');
+      return;
+    }
+
+    // Kiểm tra tính hợp lệ của từng dung tích
+    const invalidVariant = variantsList.find(
+      (v) => !v.capacity.trim() || !v.price || Number(v.price) <= 0
+    );
+    if (invalidVariant) {
+      showToast('Vui lòng nhập đầy đủ Tên dung tích và Giá niêm yết (> 0đ) cho tất cả biến thể');
+      return;
+    }
 
     const slug = prodSlug.trim() || prodName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const catItem = categories.find((c) => c.slug === prodCategory);
+
+    const mappedVariants = variantsList.map((v) => ({
+      capacity: v.capacity.trim(),
+      price: Number(v.price),
+      salePrice: v.salePrice.trim() ? Number(v.salePrice) : undefined,
+      stock: Number(v.stock) || 0,
+      sku: `NMH-${slug.toUpperCase().slice(0, 4)}-${v.capacity.trim().toUpperCase()}`,
+    }));
 
     const productPayload: Product = {
       id: editingProductId || `nmh-${Date.now()}`,
@@ -301,15 +382,7 @@ export default function AdminPage() {
       extractionMethod: prodExtraction.trim(),
       image: prodImage.trim() || 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80',
       gallery: [prodImage.trim() || 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80'],
-      variants: [
-        {
-          capacity: '10ml',
-          price: Number(price10ml) || 180000,
-          salePrice: salePrice10ml ? Number(salePrice10ml) : undefined,
-          stock: Number(stock10ml) || 50,
-          sku: `NMH-${Date.now().toString().slice(-4)}`,
-        },
-      ],
+      variants: mappedVariants,
       notes: {
         top: prodTopNote.trim() || 'Hương thảo mộc mát lành',
         middle: prodMidNote.trim() || 'Hương hoa thoang thoảng',
@@ -331,7 +404,7 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        showToast(editingProductId ? 'Đã cập nhật sản phẩm!' : 'Đã thêm sản phẩm mới!');
+        showToast(editingProductId ? 'Đã cập nhật sản phẩm và bảng giá!' : 'Đã thêm sản phẩm mới thành công!');
         setShowProductModal(false);
         fetchData();
       }
@@ -340,6 +413,7 @@ export default function AdminPage() {
       showToast('Có lỗi khi lưu sản phẩm');
     }
   };
+
 
   // Delete Product
   const handleDeleteProduct = async (id: string, name: string) => {
@@ -1098,37 +1172,124 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Price & Stock */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-clay/60">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-charcoal">Giá niêm yết 10ml (VNĐ) *</label>
-                      <input
-                        type="number"
-                        required
-                        value={price10ml}
-                        onChange={(e) => setPrice10ml(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50 outline-none"
-                      />
+                  {/* Dynamic Capacities & Pricing (Variants) */}
+                  <div className="p-4 bg-ivory-50/80 rounded-2xl border border-clay/80 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-clay/60">
+                      <div>
+                        <h4 className="font-serif font-bold text-sm text-botanical flex items-center gap-2">
+                          <span>Tùy Chỉnh Dung Tích & Bảng Giá</span>
+                          <span className="text-[11px] font-sans font-normal text-charcoal/60">({variantsList.length} mức dung tích)</span>
+                        </h4>
+                        <p className="text-[11px] text-charcoal/60 mt-0.5">
+                          Tùy biến dung tích (10ml, 30ml, 50ml, 100ml,...) với mức giá niêm yết, giá khuyến mãi và tồn kho riêng.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddVariant()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-botanical hover:bg-botanical-dark text-ivory text-xs font-semibold rounded-xl transition-all shadow-xs self-start sm:self-auto"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Thêm Dung Tích</span>
+                      </button>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-charcoal">Giá khuyến mãi (tùy chọn)</label>
-                      <input
-                        type="number"
-                        value={salePrice10ml}
-                        onChange={(e) => setSalePrice10ml(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50 outline-none"
-                      />
+
+                    {/* Quick Suggestion Chips */}
+                    <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                      <span className="text-charcoal/60 font-medium">Gợi ý nhanh:</span>
+                      {['10ml', '15ml', '30ml', '50ml', '100ml'].map((suggestCap) => (
+                        <button
+                          key={suggestCap}
+                          type="button"
+                          onClick={() => handleAddVariant(suggestCap)}
+                          className="px-2.5 py-0.5 rounded-full bg-white hover:bg-botanical/10 text-botanical border border-clay/80 font-medium transition-colors"
+                        >
+                          + {suggestCap}
+                        </button>
+                      ))}
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-charcoal">Số lượng tồn kho</label>
-                      <input
-                        type="number"
-                        value={stock10ml}
-                        onChange={(e) => setStock10ml(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50 outline-none"
-                      />
+
+                    {/* Variant Rows List */}
+                    <div className="space-y-3">
+                      {variantsList.map((vItem, index) => (
+                        <div
+                          key={index}
+                          className="bg-white p-3.5 rounded-xl border border-clay/70 shadow-2xs space-y-3"
+                        >
+                          <div className="flex items-center justify-between pb-1.5 border-b border-clay/40">
+                            <span className="text-xs font-bold text-botanical flex items-center gap-1.5">
+                              <span className="w-4 h-4 rounded-full bg-botanical/10 text-botanical flex items-center justify-center text-[10px]">
+                                {index + 1}
+                              </span>
+                              <span>Phân loại #{index + 1}</span>
+                            </span>
+
+                            {variantsList.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveVariant(index)}
+                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors flex items-center gap-1 text-[11px]"
+                                title="Xóa mức dung tích này"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Xóa</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                            <div className="space-y-1">
+                              <label className="font-semibold text-charcoal">Tên dung tích *</label>
+                              <input
+                                type="text"
+                                required
+                                value={vItem.capacity}
+                                onChange={(e) => handleUpdateVariant(index, 'capacity', e.target.value)}
+                                placeholder="VD: 10ml, 50ml..."
+                                className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50/50 focus:bg-white focus:border-botanical outline-none"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="font-semibold text-charcoal">Giá niêm yết (VNĐ) *</label>
+                              <input
+                                type="number"
+                                required
+                                value={vItem.price}
+                                onChange={(e) => handleUpdateVariant(index, 'price', e.target.value)}
+                                placeholder="VD: 180000"
+                                className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50/50 focus:bg-white focus:border-botanical outline-none"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="font-semibold text-charcoal">Giá khuyến mãi (tùy chọn)</label>
+                              <input
+                                type="number"
+                                value={vItem.salePrice}
+                                onChange={(e) => handleUpdateVariant(index, 'salePrice', e.target.value)}
+                                placeholder="VD: 160000"
+                                className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50/50 focus:bg-white focus:border-botanical outline-none"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="font-semibold text-charcoal">Số lượng tồn kho</label>
+                              <input
+                                type="number"
+                                value={vItem.stock}
+                                onChange={(e) => handleUpdateVariant(index, 'stock', e.target.value)}
+                                placeholder="VD: 50"
+                                className="w-full px-3 py-2 rounded-xl border border-clay bg-ivory-50/50 focus:bg-white focus:border-botanical outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
+
 
                   <div className="flex justify-end gap-3 pt-2">
                     <button
@@ -1162,12 +1323,33 @@ export default function AdminPage() {
                       <span className="text-[10px] text-earth uppercase font-bold block">{p.categoryName}</span>
                       <h4 className="font-serif font-bold text-sm text-botanical line-clamp-1">{p.name}</h4>
                       <p className="text-charcoal/60 text-[11px] line-clamp-1 mt-0.5">{p.subtitle}</p>
+
+                      {/* Capacities list badges */}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {p.variants?.map((v) => (
+                          <span
+                            key={v.capacity}
+                            className="px-1.5 py-0.5 rounded bg-ivory text-[10px] font-medium text-botanical border border-clay/60"
+                          >
+                            {v.capacity}: {formatVND(v.salePrice || v.price)}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="pt-2 border-t border-clay/60 flex items-center justify-between">
-                      <span className="font-serif font-bold text-botanical text-sm">
-                        {formatVND(p.variants[0]?.salePrice || p.variants[0]?.price || 0)}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-charcoal/50 font-medium">
+                          {p.variants?.length > 1 ? `${p.variants.length} dung tích` : '1 dung tích'}
+                        </span>
+                        <span className="font-serif font-bold text-botanical text-sm">
+                          {formatVND(p.variants[0]?.salePrice || p.variants[0]?.price || 0)}
+                          {p.variants?.length > 1 && (
+                            <span className="font-sans font-normal text-xs text-charcoal/50"> trở lên</span>
+                          )}
+                        </span>
+                      </div>
+
 
                       <div className="flex items-center gap-1.5">
                         <button
