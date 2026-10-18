@@ -352,6 +352,30 @@
   ],
   "orders": [
     {
+      "id": "0c2b871a-6bbd-49e8-8497-805b868f7a92",
+      "orderCode": "NMH-261018-4838",
+      "createdAt": "2026-10-18T14:50:10.361Z",
+      "customerName": "Le Thi Huong",
+      "customerPhone": "0912345678",
+      "customerEmail": "huong@gmail.com",
+      "shippingAddress": "456 Le Loi, Quan 1, TP. HCM",
+      "note": "Giao gio hanh chinh",
+      "items": [
+        {
+          "productId": "nmh-01",
+          "name": "Tinh Dầu Bưởi Hồng Hoàng Gia",
+          "capacity": "10ml",
+          "price": 175000,
+          "quantity": 2
+        }
+      ],
+      "subtotal": 350000,
+      "shippingFee": 30000,
+      "total": 380000,
+      "status": "pending",
+      "paymentMethod": "cod"
+    },
+    {
       "id": "96930a79-beee-44cb-90f8-2edc65a21543",
       "orderCode": "NMH-261018-9496",
       "createdAt": "2026-10-18T11:58:10.077Z",
@@ -377,6 +401,14 @@
     }
   ],
   "leads": [
+    {
+      "id": "256d38b9-7648-4902-9145-1524dc096c04",
+      "name": "Nguyen Van A",
+      "phone": "0988776655",
+      "interest": "Tu van thu gian",
+      "createdAt": "2026-10-18T14:50:00.874Z",
+      "status": "new"
+    },
     {
       "id": "a1d17358-d49b-4fc1-bfff-f16d607250d7",
       "name": "Chị Khánh Linh",

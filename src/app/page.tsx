@@ -5,7 +5,6 @@ import FeaturedProducts from '@/components/home/FeaturedProducts';
 import BotanicalStory from '@/components/home/BotanicalStory';
 import ProductRitual from '@/components/home/ProductRitual';
 import SocialProofAndArticles from '@/components/home/SocialProofAndArticles';
-import LeadCaptureSection from '@/components/home/LeadCaptureSection';
 import { getProducts, getArticles, getSiteConfig, getCategories } from '@/lib/storage';
 
 export const revalidate = 60;
@@ -20,7 +19,7 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero Section (2D Cinematic) */}
+      {/* 1. Hero Section */}
       <Hero
         headline={siteConfig.heroHeadline}
         subheadline={siteConfig.heroSubheadline}
@@ -28,22 +27,19 @@ export default async function HomePage() {
         ctaLink={siteConfig.heroCtaLink}
       />
 
-      {/* Danh mục sản phẩm: Khám phá thế giới tinh dầu */}
+      {/* 2. Danh mục sản phẩm: Khám phá thế giới tinh dầu */}
       <CategoryShowcase categories={categories} />
 
-      {/* Sản phẩm nổi bật: Tinh hoa thiên nhiên, nâng tầm cuộc sống */}
+      {/* 3. Sản phẩm nổi bật: Tinh hoa thiên nhiên, nâng tầm cuộc sống */}
       <FeaturedProducts products={products} />
 
-      {/* Câu chuyện thương hiệu: Hành trình mang hương thiên nhiên vào từng khoảnh khắc sống */}
+      {/* 4. Câu chuyện thương hiệu: Hành trình mang hương thiên nhiên vào từng khoảnh khắc sống */}
       <BotanicalStory />
 
-      {/* Cách sử dụng: Tinh dầu – đơn giản mà hiệu quả */}
+      {/* 5. Cách sử dụng: Tinh dầu – đơn giản mà hiệu quả */}
       <ProductRitual />
 
-      {/* Form lấy data khách hàng & đăng ký tư vấn */}
-      <LeadCaptureSection />
-
-      {/* Khách hàng nói gì & Bài viết gần đây */}
+      {/* 6. Khách hàng nói gì về Nam Mộc Hương? & Bài viết gần đây */}
       <SocialProofAndArticles articles={articles} />
     </>
   );

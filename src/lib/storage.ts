@@ -375,3 +375,54 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const articles = await getArticles();
   return articles.find((a) => a.slug === slug) || null;
 }
+
+export async function saveArticle(article: Article): Promise<Article> {
+  const store = ensureLocalStore();
+  if (!store.articles) store.articles = initialArticles;
+  const index = store.articles.findIndex((a) => a.id === article.id || a.slug === article.slug);
+  if (index >= 0) {
+    store.articles[index] = article;
+  } else {
+    store.articles.unshift(article);
+  }
+  writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('articles').upsert({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        content: article.content,
+        cover_image: article.coverImage,
+        category: article.category,
+        published_at: article.publishedAt,
+        read_time: article.readTime,
+        author: article.author,
+      });
+    } catch (e) {
+      console.error('Supabase article upsert failed:', e);
+    }
+  }
+
+  return article;
+}
+
+export async function deleteArticle(id: string): Promise<boolean> {
+  const store = ensureLocalStore();
+  if (!store.articles) return false;
+  store.articles = store.articles.filter((a) => a.id !== id);
+  writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('articles').delete().eq('id', id);
+    } catch (e) {
+      console.error('Supabase article delete failed:', e);
+    }
+  }
+
+  return true;
+}
+
