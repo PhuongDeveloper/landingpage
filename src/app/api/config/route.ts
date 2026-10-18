@@ -2,13 +2,24 @@ import { NextResponse } from 'next/server';
 import { getSiteConfig, saveSiteConfig } from '@/lib/storage';
 import { SiteConfig } from '@/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+  'Surrogate-Control': 'no-store',
+};
+
 export async function GET() {
   try {
     const config = await getSiteConfig();
-    return NextResponse.json(config);
+    return NextResponse.json(config, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('Error in GET /api/config:', error);
-    return NextResponse.json({ error: 'Lỗi tải cấu hình' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi tải cấu hình' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -31,13 +42,16 @@ export async function POST(request: Request) {
 
     const saved = await saveSiteConfig(sanitizedConfig);
 
-    return NextResponse.json({
-      success: true,
-      config: saved,
-      message: 'Cập nhật cấu hình website thành công!',
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        config: saved,
+        message: 'Cập nhật cấu hình website thành công!',
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error in POST /api/config:', error);
-    return NextResponse.json({ error: 'Lỗi lưu cấu hình' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi lưu cấu hình' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   description: 'Khám phá trọn bộ tinh dầu đơn hương, phối hương, xông phòng và dầu massage chưng cất tự nhiên tại Nam Mộc Hương.',
 };
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   searchParams: {

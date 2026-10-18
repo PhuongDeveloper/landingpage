@@ -118,13 +118,22 @@ export default function AdminPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      const t = Date.now();
+      const fetchOpts: RequestInit = {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      };
+
       const [resOrders, resProducts, resCats, resLeads, resArticles, resConfig] = await Promise.all([
-        fetch('/api/orders').then((r) => r.json()).catch(() => []),
-        fetch('/api/products').then((r) => r.json()).catch(() => []),
-        fetch('/api/categories').then((r) => r.json()).catch(() => []),
-        fetch('/api/leads').then((r) => r.json()).catch(() => []),
-        fetch('/api/articles').then((r) => r.json()).catch(() => []),
-        fetch('/api/config').then((r) => r.json()).catch(() => null),
+        fetch(`/api/orders?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/products?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/categories?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/leads?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/articles?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/config?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => null),
       ]);
 
       if (Array.isArray(resOrders)) setOrders(resOrders);
@@ -417,15 +426,23 @@ export default function AdminPage() {
 
   // Delete Product
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn sản phẩm "${name}"?`)) return;
+    if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn sản phẩm "${name}"? Dữ liệu sẽ mất vĩnh viễn trên toàn hệ thống.`)) return;
     try {
-      const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
       if (res.ok) {
         setProducts((prev) => prev.filter((p) => p.id !== id));
-        showToast(`Đã xóa sản phẩm ${name}`);
+        showToast(`Đã xóa vĩnh viễn sản phẩm "${name}"`);
+        await fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || `Không thể xóa sản phẩm "${name}"`);
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi kết nối khi xóa sản phẩm');
     }
   };
 
@@ -459,10 +476,11 @@ export default function AdminPage() {
         setCatSlug('');
         setCatSubtitle('');
         setCatImage('');
-        fetchData();
+        await fetchData();
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi khi lưu danh mục');
     }
   };
 
@@ -470,13 +488,21 @@ export default function AdminPage() {
   const handleDeleteCategory = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc muốn xóa loại sản phẩm "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/categories?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
       if (res.ok) {
         setCategories((prev) => prev.filter((c) => c.id !== id));
-        showToast(`Đã xóa danh mục ${name}`);
+        showToast(`Đã xóa vĩnh viễn danh mục "${name}"`);
+        await fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || `Không thể xóa danh mục "${name}"`);
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi kết nối khi xóa danh mục');
     }
   };
 
@@ -515,10 +541,11 @@ export default function AdminPage() {
         setArticleExcerpt('');
         setArticleContent('');
         setArticleCover('');
-        fetchData();
+        await fetchData();
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi khi lưu bài viết');
     }
   };
 
@@ -526,13 +553,65 @@ export default function AdminPage() {
   const handleDeleteArticle = async (id: string, title: string) => {
     if (!confirm(`Bạn có chắc muốn xóa bài viết "${title}"?`)) return;
     try {
-      const res = await fetch(`/api/articles?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/articles?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
       if (res.ok) {
         setArticles((prev) => prev.filter((a) => a.id !== id));
-        showToast(`Đã xóa bài viết ${title}`);
+        showToast(`Đã xóa vĩnh viễn bài viết "${title}"`);
+        await fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || `Không thể xóa bài viết "${title}"`);
       }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi kết nối khi xóa bài viết');
+    }
+  };
+
+  // Delete Lead / Customer Data
+  const handleDeleteLead = async (id: string, name: string) => {
+    if (!confirm(`Bạn có chắc muốn xóa dữ liệu khách hàng "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/leads?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        setLeads((prev) => prev.filter((l) => l.id !== id));
+        showToast(`Đã xóa data khách hàng "${name}"`);
+        await fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || `Không thể xóa khách hàng "${name}"`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối khi xóa data khách hàng');
+    }
+  };
+
+  // Delete Order
+  const handleDeleteOrder = async (orderCode: string) => {
+    if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn đơn hàng "${orderCode}"? Dữ liệu này sẽ không thể khôi phục.`)) return;
+    try {
+      const res = await fetch(`/api/orders?code=${encodeURIComponent(orderCode)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        setOrders((prev) => prev.filter((o) => o.orderCode !== orderCode && o.id !== orderCode));
+        showToast(`Đã xóa vĩnh viễn đơn hàng "${orderCode}"`);
+        await fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || `Không thể xóa đơn hàng "${orderCode}"`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối khi xóa đơn hàng');
     }
   };
 
@@ -938,6 +1017,7 @@ export default function AdminPage() {
                       <th className="p-3">Ghi Chú / Lời Nhắn</th>
                       <th className="p-3">Thời Gian</th>
                       <th className="p-3">Trạng Thái Xử Lý</th>
+                      <th className="p-3 text-right">Thao Tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-clay/40">
@@ -975,6 +1055,17 @@ export default function AdminPage() {
                             <option value="ordered">Đã chốt đơn</option>
                             <option value="cancelled">Hủy / Không liên hệ được</option>
                           </select>
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteLead(l.id, l.name)}
+                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors inline-flex items-center gap-1"
+                            title="Xóa data khách"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span className="text-[10px]">Xóa</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1729,6 +1820,15 @@ export default function AdminPage() {
                           <option value="completed">Đã hoàn thành</option>
                           <option value="cancelled">Đã hủy</option>
                         </select>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOrder(o.orderCode)}
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                          title="Xóa vĩnh viễn đơn hàng này"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 

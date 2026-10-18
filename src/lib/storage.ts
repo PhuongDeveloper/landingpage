@@ -55,11 +55,11 @@ function ensureLocalStore(): StoreData {
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
     return {
-      products: parsed.products || initialProducts,
-      categories: parsed.categories || initialCategories,
-      orders: parsed.orders || [],
-      leads: parsed.leads || initialLeads,
-      articles: parsed.articles || initialArticles,
+      products: Array.isArray(parsed.products) ? parsed.products : initialProducts,
+      categories: Array.isArray(parsed.categories) ? parsed.categories : initialCategories,
+      orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+      leads: Array.isArray(parsed.leads) ? parsed.leads : initialLeads,
+      articles: Array.isArray(parsed.articles) ? parsed.articles : initialArticles,
       config: parsed.config || initialSiteConfig,
     };
   } catch (err) {
@@ -90,12 +90,12 @@ function writeLocalStore(data: StoreData) {
 // ---------------- CATEGORIES ----------------
 export async function getCategories(): Promise<CategoryItem[]> {
   const store = ensureLocalStore();
-  return store.categories || initialCategories;
+  return Array.isArray(store.categories) ? store.categories : initialCategories;
 }
 
 export async function saveCategory(category: CategoryItem): Promise<CategoryItem> {
   const store = ensureLocalStore();
-  if (!store.categories) store.categories = initialCategories;
+  if (!Array.isArray(store.categories)) store.categories = [...initialCategories];
   const index = store.categories.findIndex((c) => c.id === category.id || c.slug === category.slug);
   if (index >= 0) {
     store.categories[index] = category;
@@ -103,14 +103,41 @@ export async function saveCategory(category: CategoryItem): Promise<CategoryItem
     store.categories.push(category);
   }
   writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('categories').upsert({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        subtitle: category.subtitle,
+        image: category.image,
+      });
+    } catch (e) {
+      console.error('Supabase category upsert failed:', e);
+    }
+  }
+
   return category;
 }
 
-export async function deleteCategory(id: string): Promise<boolean> {
+export async function deleteCategory(idOrSlug: string): Promise<boolean> {
+  const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
-  if (!store.categories) return false;
-  store.categories = store.categories.filter((c) => c.id !== id);
+  if (!Array.isArray(store.categories)) return false;
+  store.categories = store.categories.filter(
+    (c) => c.id.toLowerCase() !== cleanTarget && c.slug.toLowerCase() !== cleanTarget
+  );
   writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('categories').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } catch (e) {
+      console.error('Supabase category delete failed:', e);
+    }
+  }
+
   return true;
 }
 
@@ -135,17 +162,18 @@ export async function getProducts(): Promise<Product[]> {
   }
 
   const store = ensureLocalStore();
-  return store.products;
+  return Array.isArray(store.products) ? store.products : initialProducts;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const products = await getProducts();
-  return products.find((p) => p.slug === slug) || null;
+  return products.find((p) => p.slug === slug || p.id === slug) || null;
 }
 
 export async function saveProduct(product: Product): Promise<Product> {
   const store = ensureLocalStore();
-  const index = store.products.findIndex((p) => p.id === product.id);
+  if (!Array.isArray(store.products)) store.products = [...initialProducts];
+  const index = store.products.findIndex((p) => p.id === product.id || p.slug === product.slug);
   if (index >= 0) {
     store.products[index] = product;
   } else {
@@ -185,14 +213,21 @@ export async function saveProduct(product: Product): Promise<Product> {
   return product;
 }
 
-export async function deleteProduct(productId: string): Promise<boolean> {
+export async function deleteProduct(productIdOrSlug: string): Promise<boolean> {
+  const cleanTarget = decodeURIComponent(productIdOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
-  store.products = store.products.filter((p) => p.id !== productId);
+  if (!Array.isArray(store.products)) return false;
+  store.products = store.products.filter(
+    (p) => p.id.toLowerCase() !== cleanTarget && p.slug.toLowerCase() !== cleanTarget
+  );
   writeLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
-      await supabase.from('products').delete().eq('id', productId);
+      await supabase
+        .from('products')
+        .delete()
+        .or(`id.eq.${productIdOrSlug},slug.eq.${productIdOrSlug}`);
     } catch (e) {
       console.error('Supabase product delete failed:', e);
     }
@@ -233,18 +268,20 @@ export async function getOrders(): Promise<Order[]> {
   }
 
   const store = ensureLocalStore();
-  return store.orders.sort(
+  const orders = Array.isArray(store.orders) ? store.orders : [];
+  return orders.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
 
 export async function getOrderByCode(code: string): Promise<Order | null> {
   const orders = await getOrders();
-  return orders.find((o) => o.orderCode === code) || null;
+  return orders.find((o) => o.orderCode === code || o.id === code) || null;
 }
 
 export async function createOrder(order: Order): Promise<Order> {
   const store = ensureLocalStore();
+  if (!Array.isArray(store.orders)) store.orders = [];
   store.orders.unshift(order);
   writeLocalStore(store);
 
@@ -276,7 +313,8 @@ export async function createOrder(order: Order): Promise<Order> {
 
 export async function updateOrderStatus(orderCode: string, status: Order['status']): Promise<boolean> {
   const store = ensureLocalStore();
-  const order = store.orders.find((o) => o.orderCode === orderCode);
+  if (!Array.isArray(store.orders)) return false;
+  const order = store.orders.find((o) => o.orderCode === orderCode || o.id === orderCode);
   if (order) {
     order.status = status;
     writeLocalStore(store);
@@ -296,32 +334,97 @@ export async function updateOrderStatus(orderCode: string, status: Order['status
   return false;
 }
 
+export async function deleteOrder(idOrCode: string): Promise<boolean> {
+  const cleanTarget = decodeURIComponent(idOrCode).trim().toLowerCase();
+  const store = ensureLocalStore();
+  if (!Array.isArray(store.orders)) return false;
+  store.orders = store.orders.filter(
+    (o) => o.id.toLowerCase() !== cleanTarget && o.orderCode.toLowerCase() !== cleanTarget
+  );
+  writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('orders').delete().or(`id.eq.${idOrCode},order_code.eq.${idOrCode}`);
+    } catch (e) {
+      console.error('Supabase order delete failed:', e);
+    }
+  }
+
+  return true;
+}
+
 // ---------------- LEADS / CUSTOMER DATA ----------------
 export async function getLeads(): Promise<Lead[]> {
   const store = ensureLocalStore();
-  return (store.leads || []).sort(
+  const leads = Array.isArray(store.leads) ? store.leads : initialLeads;
+  return leads.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
 
 export async function createLead(lead: Lead): Promise<Lead> {
   const store = ensureLocalStore();
-  if (!store.leads) store.leads = [];
+  if (!Array.isArray(store.leads)) store.leads = [];
   store.leads.unshift(lead);
   writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('leads').insert({
+        id: lead.id,
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email,
+        interest: lead.interest,
+        message: lead.message,
+        status: lead.status,
+        created_at: lead.createdAt,
+      });
+    } catch (e) {
+      console.error('Supabase lead insert failed:', e);
+    }
+  }
+
   return lead;
 }
 
 export async function updateLeadStatus(id: string, status: Lead['status']): Promise<boolean> {
   const store = ensureLocalStore();
-  if (!store.leads) return false;
+  if (!Array.isArray(store.leads)) return false;
   const lead = store.leads.find((l) => l.id === id);
   if (lead) {
     lead.status = status;
     writeLocalStore(store);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('leads').update({ status }).eq('id', id);
+      } catch (e) {
+        console.error('Supabase lead update failed:', e);
+      }
+    }
     return true;
   }
   return false;
+}
+
+export async function deleteLead(id: string): Promise<boolean> {
+  const cleanTarget = decodeURIComponent(id).trim().toLowerCase();
+  const store = ensureLocalStore();
+  if (!Array.isArray(store.leads)) return false;
+  store.leads = store.leads.filter((l) => l.id.toLowerCase() !== cleanTarget);
+  writeLocalStore(store);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('leads').delete().eq('id', id);
+    } catch (e) {
+      console.error('Supabase lead delete failed:', e);
+    }
+  }
+
+  return true;
 }
 
 // ---------------- SITE CONFIG ----------------
@@ -368,17 +471,17 @@ export async function saveSiteConfig(config: SiteConfig): Promise<SiteConfig> {
 // ---------------- ARTICLES ----------------
 export async function getArticles(): Promise<Article[]> {
   const store = ensureLocalStore();
-  return store.articles || initialArticles;
+  return Array.isArray(store.articles) ? store.articles : initialArticles;
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const articles = await getArticles();
-  return articles.find((a) => a.slug === slug) || null;
+  return articles.find((a) => a.slug === slug || a.id === slug) || null;
 }
 
 export async function saveArticle(article: Article): Promise<Article> {
   const store = ensureLocalStore();
-  if (!store.articles) store.articles = initialArticles;
+  if (!Array.isArray(store.articles)) store.articles = [...initialArticles];
   const index = store.articles.findIndex((a) => a.id === article.id || a.slug === article.slug);
   if (index >= 0) {
     store.articles[index] = article;
@@ -409,15 +512,18 @@ export async function saveArticle(article: Article): Promise<Article> {
   return article;
 }
 
-export async function deleteArticle(id: string): Promise<boolean> {
+export async function deleteArticle(idOrSlug: string): Promise<boolean> {
+  const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
   const store = ensureLocalStore();
-  if (!store.articles) return false;
-  store.articles = store.articles.filter((a) => a.id !== id);
+  if (!Array.isArray(store.articles)) return false;
+  store.articles = store.articles.filter(
+    (a) => a.id.toLowerCase() !== cleanTarget && a.slug.toLowerCase() !== cleanTarget
+  );
   writeLocalStore(store);
 
   if (isSupabaseConfigured && supabase) {
     try {
-      await supabase.from('articles').delete().eq('id', id);
+      await supabase.from('articles').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
     } catch (e) {
       console.error('Supabase article delete failed:', e);
     }
@@ -425,4 +531,3 @@ export async function deleteArticle(id: string): Promise<boolean> {
 
   return true;
 }
-

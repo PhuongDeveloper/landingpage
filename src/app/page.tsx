@@ -7,7 +7,8 @@ import ProductRitual from '@/components/home/ProductRitual';
 import SocialProofAndArticles from '@/components/home/SocialProofAndArticles';
 import { getProducts, getArticles, getSiteConfig, getCategories } from '@/lib/storage';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function HomePage() {
   const [products, articles, siteConfig, categories] = await Promise.all([

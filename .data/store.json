@@ -2,19 +2,19 @@
   "products": [
     {
       "id": "nmh-01",
-      "name": "Tinh Dầu Bưởi Hồng Hoàng Gia",
-      "slug": "tinh-dau-buoi-hong-hoang-gia",
-      "category": "don-huong",
-      "categoryName": "Tinh Dầu Đơn Hương",
-      "subtitle": "Nốt hương cam chanh thanh ngọt, thanh lọc không gian và giải tỏa lo âu",
-      "description": "Chưng cất từ lớp vỏ ngoài tươi mọng của những trái bưởi hồng chín cây tại vùng phù sa màu mỡ. Hương thơm bừng sáng, tươi mát xen lẫn vị ngọt thanh giúp làm dịu tâm trí sau ngày làm việc căng thẳng và kích thích cảm hứng sáng tạo.",
-      "story": "Mỗi mẻ bưởi được thu hái thủ công vào sáng sớm khi tinh dầu tích tụ dồi dào nhất nơi tế bào vỏ. Trải qua 6 giờ chưng cất chậm, từng giọt tinh dầu màu vàng nhạt óng ả mang lại hương thơm nguyên bản như đứng giữa vườn bưởi đang trổ quả.",
-      "origin": "Vùng bưởi sông Tiền, Bến Tre",
-      "extractionMethod": "Ép lạnh kết hợp lôi cuốn hơi nước áp suất thấp",
-      "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
+      "name": "Tinh dầu oải hương",
+      "slug": "tinh-dau-oai-huong",
+      "category": "thu-gian",
+      "categoryName": "Tinh dầu Thư giãn",
+      "subtitle": "Thư giãn, giảm căng thẳng",
+      "description": "Chưng cất từ những nhành hoa oải hương (Lavender) tím ngát, mang lại nốt hương thảo mộc dịu dàng, xoa dịu các cơn căng thẳng thần kinh và giúp bạn dễ dàng chìm vào giấc ngủ an lành.",
+      "story": "Mỗi bông hoa oải hương được chọn lọc kỹ càng, chưng cất ở nhiệt độ kiểm soát dưới 95°C để giữ trọn nốt hương ngọt mát đặc trưng.",
+      "origin": "Đà Lạt & Cao nguyên Mộc Châu",
+      "extractionMethod": "Chưng cất lôi cuốn hơi nước áp suất thấp",
+      "image": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
       "gallery": [
-        "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80"
       ],
       "variants": [
         {
@@ -22,56 +22,217 @@
           "price": 195000,
           "salePrice": 175000,
           "stock": 45,
-          "sku": "NMH-BH-10"
+          "sku": "NMH-OH-10"
         },
         {
           "capacity": "30ml",
           "price": 420000,
           "salePrice": 380000,
           "stock": 30,
-          "sku": "NMH-BH-30"
+          "sku": "NMH-OH-30"
         },
         {
           "capacity": "50ml",
           "price": 620000,
           "stock": 15,
-          "sku": "NMH-BH-50"
+          "sku": "NMH-OH-50"
         }
       ],
       "notes": {
-        "top": "Vỏ bưởi hồng tươi, Chanh xanh mọng nước",
-        "middle": "Lá chanh nghiền, Hoa bưởi thoang thoảng",
-        "base": "Xạ hương thực vật, Hương cỏ non"
+        "top": "Hoa oải hương tươi, Cam thảo thoang thoảng",
+        "middle": "Hương thảo mộc dịu, Cúc La Mã",
+        "base": "Gỗ mộc ấm, Xạ hương thực vật"
       },
       "benefits": [
-        "Thanh lọc không khí và khử mùi ẩm mốc tự nhiên",
-        "Giải tỏa trạng thái mệt mỏi, nâng cao sự tập trung khi làm việc",
-        "Hỗ trợ chăm sóc da đầu và nuôi dưỡng tóc chắc khỏe khi dùng kèm dầu nền"
+        "Giúp thư giãn tinh thần sau những giờ làm việc mệt mỏi",
+        "Cải thiện chất lượng giấc ngủ sâu và ngon hơn",
+        "Khử mùi ẩm mốc, mang lại hương hoa dễ chịu cho phòng ngủ"
       ],
       "ritualGuide": [
-        "Nhỏ 3-5 giọt vào máy khuếch tán sương siêu âm với 150ml nước sạch.",
-        "Pha 2 giọt cùng 10ml dầu jojoba để xoa bóp nhẹ vùng thái dương và gáy khi căng thẳng."
+        "Nhỏ 3-5 giọt vào máy khuếch tán sương trước khi ngủ 30 phút.",
+        "Thoa 1 giọt lên góc gối hoặc vùng thái dương để giải tỏa căng thẳng."
       ],
       "isFeatured": true,
       "isNew": false,
       "rating": 4.9,
-      "reviewCount": 128
+      "reviewCount": 168
     },
     {
       "id": "nmh-02",
+      "name": "Tinh dầu bạc hà",
+      "slug": "tinh-dau-bac-ha",
+      "category": "tap-trung",
+      "categoryName": "Tinh dầu Tập trung",
+      "subtitle": "Thanh mát, tỉnh táo",
+      "description": "Chiết xuất từ lá bạc hà tươi giàu menthol tự nhiên. Nốt hương the mát bùng nổ giúp đánh thức mọi giác quan, xua tan cơn buồn ngủ và gia tăng sự tập trung cao độ.",
+      "story": "Lá bạc hà được thu hoạch vào sáng sớm tinh mơ khi còn đọng sương, chưng cất ngay trong ngày để giữ nguyên hàm lượng tinh dầu thanh khiết nhất.",
+      "origin": "Vùng đồi thảo mộc Lâm Đồng",
+      "extractionMethod": "Chưng cất lôi cuốn hơi nước truyền thống",
+      "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80"
+      ],
+      "variants": [
+        {
+          "capacity": "10ml",
+          "price": 165000,
+          "salePrice": 145000,
+          "stock": 60,
+          "sku": "NMH-BH-10"
+        },
+        {
+          "capacity": "30ml",
+          "price": 350000,
+          "salePrice": 310000,
+          "stock": 35,
+          "sku": "NMH-BH-30"
+        }
+      ],
+      "notes": {
+        "top": "Lá bạc hà nghiền the mát, Băng tuyết nhẹ",
+        "middle": "Cỏ non sau mưa, Khuynh diệp mát lành",
+        "base": "Nhựa cây thông dịu nhẹ"
+      },
+      "benefits": [
+        "Đánh thức sự tỉnh táo tức thì khi làm việc hoặc học tập",
+        "Thông thoáng đường hô hấp, làm dịu cảm giác nghẹt mũi",
+        "Xua đuổi muỗi và côn trùng trong không gian làm việc"
+      ],
+      "ritualGuide": [
+        "Khuếch tán 4 giọt tại góc bàn làm việc hoặc phòng đọc sách.",
+        "Nhỏ 1 giọt vào khăn giấy để hít ngửi sâu khi cảm thấy mệt mỏi."
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "rating": 4.8,
+      "reviewCount": 142
+    },
+    {
+      "id": "nmh-03",
+      "name": "Tinh dầu tràm trà",
+      "slug": "tinh-dau-tram-tra",
+      "category": "thanh-loc",
+      "categoryName": "Tinh dầu Thanh lọc",
+      "subtitle": "Làm sạch, bảo vệ",
+      "description": "Được biết đến với khả năng kháng khuẩn tự nhiên vượt trội. Tinh dầu tràm trà Nam Mộc Hương giúp thanh lọc bầu không khí, bảo vệ hệ hô hấp cho cả gia đình trong mùa thời tiết giao mùa.",
+      "story": "Chiết xuất từ những cành lá tràm trà hữu cơ giàu terpineol, giữ trọn đặc tính dược thảo an toàn cho da và niêm mạc.",
+      "origin": "Quảng Trị & Thừa Thiên Huế",
+      "extractionMethod": "Chưng cất phân đoạn hơi nước",
+      "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
+      ],
+      "variants": [
+        {
+          "capacity": "10ml",
+          "price": 180000,
+          "salePrice": 155000,
+          "stock": 50,
+          "sku": "NMH-TT-10"
+        },
+        {
+          "capacity": "30ml",
+          "price": 390000,
+          "salePrice": 340000,
+          "stock": 40,
+          "sku": "NMH-TT-30"
+        },
+        {
+          "capacity": "50ml",
+          "price": 560000,
+          "stock": 20,
+          "sku": "NMH-TT-50"
+        }
+      ],
+      "notes": {
+        "top": "Lá tràm trà tươi cay nhẹ, Khí trời ban mai",
+        "middle": "Thảo mộc thanh khiết, Bạch đàn dịu",
+        "base": "Gỗ thông khô"
+      },
+      "benefits": [
+        "Kháng khuẩn không khí, ngăn ngừa vi khuẩn và mầm bệnh mùa mưa",
+        "Hỗ trợ làm dịu các vết muỗi cắn, côn trùng đốt",
+        "Khử sạch mùi ẩm ướt trong tủ quần áo, phòng tắm, ô tô"
+      ],
+      "ritualGuide": [
+        "Nhỏ 5 giọt vào xô nước ấm khi lau dọn nhà cửa.",
+        "Xông phòng mỗi chiều để bảo vệ sức khỏe các bé trong gia đình."
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "rating": 4.9,
+      "reviewCount": 95
+    },
+    {
+      "id": "nmh-04",
+      "name": "Tinh dầu cam ngọt",
+      "slug": "tinh-dau-cam-ngot",
+      "category": "thanh-loc",
+      "categoryName": "Tinh dầu Thanh lọc",
+      "subtitle": "Lan tỏa năng lượng tích cực",
+      "description": "Chưng cất từ vỏ cam mọng nắng miền sông Tiền. Hương thơm ngọt ngào, ấm áp như ánh nắng sớm, lập tức xua tan u ám và mang lại cảm giác vui vẻ, ấm cúng cho cả gian nhà.",
+      "story": "Cam được trồng trên dải đất phù sa màu mỡ, thu hái thủ công và bóc vỏ trong vòng 4 giờ để không làm suy giảm các hoạt chất d-limonene quý báu.",
+      "origin": "Bến Tre & Vĩnh Long",
+      "extractionMethod": "Ép lạnh kết hợp lôi cuốn hơi nước",
+      "image": "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80"
+      ],
+      "variants": [
+        {
+          "capacity": "10ml",
+          "price": 155000,
+          "salePrice": 135000,
+          "stock": 75,
+          "sku": "NMH-CN-10"
+        },
+        {
+          "capacity": "30ml",
+          "price": 320000,
+          "salePrice": 280000,
+          "stock": 45,
+          "sku": "NMH-CN-30"
+        },
+        {
+          "capacity": "100ml",
+          "price": 620000,
+          "stock": 20,
+          "sku": "NMH-CN-100"
+        }
+      ],
+      "notes": {
+        "top": "Vỏ cam ngọt mọng nước, Ánh nắng ban mai",
+        "middle": "Hoa cam thoảng nhẹ, Mật ong ngọt lành",
+        "base": "Xạ hương cỏ non"
+      },
+      "benefits": [
+        "Cải thiện tâm trạng ủ rũ, mang lại nguồn năng lượng phấn chấn",
+        "Tạo không gian ấm cúng, gần gũi cho phòng khách gia đình",
+        "Được trẻ nhỏ yêu thích nhờ mùi hương trái cây ngọt dịu tự nhiên"
+      ],
+      "ritualGuide": [
+        "Khuếch tán 4-6 giọt trong phòng khách hoặc phòng ăn gia đình.",
+        "Kết hợp cùng 2 giọt oải hương để tạo hương thơm ngọt ngào thư thái."
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "rating": 5,
+      "reviewCount": 189
+    },
+    {
+      "id": "nmh-05",
       "name": "Tinh Dầu Trầm Hương Rừng Già",
       "slug": "tinh-dau-tram-huong-rung-gia",
-      "category": "don-huong",
-      "categoryName": "Tinh Dầu Đơn Hương",
-      "subtitle": "Nốt trầm cổ kính, sâu lắng, mang năng lượng bình an và tĩnh tại",
-      "description": "Chưng cất từ mộc trầm tích tụ nhựa thơm tự nhiên qua nhiều năm tháng. Nốt hương mộc ấm áp, uy nghiêm và trường tồn, giúp tĩnh tâm khi thiền định, đọc sách hoặc khơi gợi không gian ấm cúng trong gia đình.",
-      "story": "Trầm hương tự sinh ra từ những tổn thương của thân cây Dó bầu nơi đại ngàn, qua thời gian chuyển hóa thành thứ gỗ thơm quý báu. Nam Mộc Hương chọn nguồn trầm có nguồn gốc bảo tồn bền vững, tôn trọng sinh thái rừng.",
-      "origin": "Rừng Dó Bầu canh tác bền vững, Tiên Phước, Quảng Nam",
+      "category": "phong-thuy",
+      "categoryName": "Tinh dầu Phong thủy",
+      "subtitle": "Nốt trầm cổ kính, sâu lắng, chiêu tài sinh khí",
+      "description": "Chưng cất từ mộc trầm tích tụ nhựa thơm tự nhiên qua nhiều năm tháng nơi đại ngàn xứ Quảng. Mang lại không gian uy nghiêm, trang trọng và nguồn năng lượng bình an.",
+      "story": "Nguồn trầm được canh tác bảo tồn bền vững, tôn trọng hệ sinh thái rừng và người gieo mầm bản địa.",
+      "origin": "Tiên Phước, Quảng Nam",
       "extractionMethod": "Chưng cất phân đoạn truyền thống chu kỳ dài 72 giờ",
       "image": "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80",
       "gallery": [
-        "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80"
       ],
       "variants": [
         {
@@ -91,233 +252,20 @@
       "notes": {
         "top": "Nhựa trầm thoang thoảng, Khói thông nhẹ",
         "middle": "Gỗ cổ thụ ẩm sương, Thảo mộc khô",
-        "base": "Hổ phách tự nhiên, Đất ẩm sau mưa"
+        "base": "Hổ phách tự nhiên, Đất ấm sau mưa"
       },
       "benefits": [
-        "Tạo không gian trang nghiêm, tĩnh lặng cho giờ thiền định hoặc thưởng trà",
-        "Lắng dịu những dao động cảm xúc bất an, đưa tâm trí về trạng thái cân bằng",
-        "Khử uế khí, mang lại sinh khí ấm áp cho ngôi nhà mới hoặc không gian thờ tự"
+        "Tạo không gian trang nghiêm, tĩnh lặng cho giờ thiền định, thưởng trà",
+        "Lắng dịu những dao động bất an, đưa tâm trí về trạng thái cân bằng",
+        "Khử uế khí, mang lại sinh khí ấm áp cho không gian sống"
       ],
       "ritualGuide": [
-        "Nhỏ 2-3 giọt vào đèn đốt tinh dầu gốm hoặc đĩa đá khuếch tán không nhiệt.",
-        "Thấm 1 giọt vào khăn tay hoặc cổ tay áo để giữ hương tĩnh tại suốt ngày dài."
+        "Nhỏ 2-3 giọt vào đĩa đá khuếch tán không nhiệt hoặc đèn xông."
       ],
       "isFeatured": true,
       "isNew": false,
       "rating": 5,
       "reviewCount": 94
-    },
-    {
-      "id": "nmh-03",
-      "name": "Tinh Dầu Phối Hương Dạ Nguyệt (Deep Sleep)",
-      "slug": "tinh-dau-phoi-huong-da-nguyet-deep-sleep",
-      "category": "phoi-huong",
-      "categoryName": "Tinh Dầu Phối Hương",
-      "subtitle": "Bản hòa ca của Oải Hương, Cúc La Mã và Gỗ Tuyết Tùng nâng niu giấc ngủ sâu",
-      "description": "Hỗn hợp tinh dầu được phối chế theo tỷ lệ vàng giữa các loài thảo mộc có tính an thần tự nhiên. Mùi hương êm dịu, ấm mềm như tấm chăn ấm bọc lấy giác quan, chuẩn bị cho cơ thể bước vào giấc ngủ an lành.",
-      "story": "Được nghiên cứu suốt 14 tháng cùng các chuyên gia trị liệu hương thơm, Dạ Nguyệt giải quyết trọn vẹn tình trạng khó ngủ do áp lực công việc và thiết bị điện tử của cuộc sống đô thị hiện đại.",
-      "origin": "Đà Lạt & Cao nguyên Mộc Châu",
-      "extractionMethod": "Phối hương thủ công mẻ nhỏ từ tinh dầu nguyên chất 100%",
-      "image": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
-      "gallery": [
-        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80"
-      ],
-      "variants": [
-        {
-          "capacity": "10ml",
-          "price": 245000,
-          "salePrice": 215000,
-          "stock": 50,
-          "sku": "NMH-DN-10"
-        },
-        {
-          "capacity": "30ml",
-          "price": 540000,
-          "salePrice": 480000,
-          "stock": 35,
-          "sku": "NMH-DN-30"
-        },
-        {
-          "capacity": "50ml",
-          "price": 780000,
-          "stock": 18,
-          "sku": "NMH-DN-50"
-        }
-      ],
-      "notes": {
-        "top": "Cam Bergamot ngọt thanh, Lá kinh giới",
-        "middle": "Oải hương Pháp êm ái, Cúc La Mã dịu dàng",
-        "base": "Tuyết tùng Atlas, Đậu Tonka trầm ấm"
-      },
-      "benefits": [
-        "Ru êm hệ thần kinh, hỗ trợ đi vào giấc ngủ nhanh hơn và hạn chế mộng mị",
-        "Giảm căng cứng cơ bắp vùng cổ vai gáy sau một ngày làm việc bên máy tính",
-        "Kiến tạo không gian phòng ngủ thơm ngát, dễ chịu như resort nghỉ dưỡng cao cấp"
-      ],
-      "ritualGuide": [
-        "Khuếch tán 4-6 giọt trong phòng ngủ 30 phút trước giờ đi ngủ.",
-        "Nhỏ 1 giọt lên góc gối hoặc góc chăn (tránh tiếp xúc trực tiếp mắt)."
-      ],
-      "isFeatured": true,
-      "isNew": true,
-      "rating": 4.9,
-      "reviewCount": 162
-    },
-    {
-      "id": "nmh-04",
-      "name": "Tinh Dầu Sả Chanh Đồi Cao",
-      "slug": "tinh-dau-sa-chanh-doi-cao",
-      "category": "xong-phong",
-      "categoryName": "Tinh Dầu Xông Phòng",
-      "subtitle": "Năng lượng tươi mới, thanh sạch, xua đuổi côn trùng hiệu quả",
-      "description": "Chưng cất từ thân sả chanh tươi trồng trên sườn đồi thoát nước tốt của vùng Tây Bắc. Nồng độ citral tự nhiên cao mang lại khả năng kháng khuẩn, khử mùi ẩm và xua muỗi vượt trội mà không gây gắt mũi.",
-      "story": "Người nông dân vùng cao chăm bón cây sả hoàn toàn bằng phân ủ hữu cơ và nguồn nước suối nguồn. Từng bẹ sả sau khi thu hái được đưa vào nồi chưng cất ngay trong ngày để giữ nguyên hương vị tươi mới nhất.",
-      "origin": "Mai Sơn, Sơn La",
-      "extractionMethod": "Chưng cất hơi nước nồi đồng truyền thống",
-      "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
-      "gallery": [
-        "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80"
-      ],
-      "variants": [
-        {
-          "capacity": "10ml",
-          "price": 145000,
-          "stock": 80,
-          "sku": "NMH-SC-10"
-        },
-        {
-          "capacity": "30ml",
-          "price": 290000,
-          "salePrice": 260000,
-          "stock": 60,
-          "sku": "NMH-SC-30"
-        },
-        {
-          "capacity": "100ml",
-          "price": 580000,
-          "salePrice": 490000,
-          "stock": 25,
-          "sku": "NMH-SC-100"
-        }
-      ],
-      "notes": {
-        "top": "Chanh tươi sảng khoái, Tinh dầu lá sả non",
-        "middle": "Thảo mộc the mát, Hương gừng thoang thoảng",
-        "base": "Thân mộc ấm nhẹ, Đất đồi khô"
-      },
-      "benefits": [
-        "Xua đuổi muỗi và côn trùng tự nhiên, an toàn cho cả gia đình có trẻ nhỏ",
-        "Đánh bay mùi đồ ăn trong bếp, mùi thuốc lá và mùi ẩm mốc ngày mưa",
-        "Kích thích sự tỉnh táo tức thì khi lái xe đường dài hoặc học tập căng thẳng"
-      ],
-      "ritualGuide": [
-        "Pha 10 giọt cùng 100ml nước ấm vào bình xịt để xịt góc phòng, rèm cửa xua muỗi.",
-        "Nhỏ 3 giọt vào xô nước lau sàn lần cuối để lưu hương tự nhiên và kháng khuẩn."
-      ],
-      "isFeatured": false,
-      "isNew": false,
-      "rating": 4.8,
-      "reviewCount": 88
-    },
-    {
-      "id": "nmh-05",
-      "name": "Tinh Dầu Gỗ Tuyết Tùng Sâu Lắng",
-      "slug": "tinh-dau-go-tuyet-tung-sau-lang",
-      "category": "don-huong",
-      "categoryName": "Tinh Dầu Đơn Hương",
-      "subtitle": "Hương gỗ khô ấm, vững chãi, tái hiện không gian rừng thông sau mưa",
-      "description": "Chiết xuất từ tâm gỗ tuyết tùng cổ thụ, mang sắc thái hương gỗ đậm đà, hơi khói và ngọt ngào kín đáo. Là nốt hương nền hoàn hảo để tiếp đất (grounding), giảm âu lo và tạo cảm giác an toàn, chở che.",
-      "story": "Những khối gỗ vụn từ xưởng mộc mỹ nghệ được tận dụng triệt để theo chu trình tuần hoàn sinh thái. Quá trình chưng cất hơi nước áp suất cao giúp giải phóng trọn vẹn hợp chất cedrol quý giá.",
-      "origin": "Vùng cao nguyên Lâm Đồng",
-      "extractionMethod": "Chưng cất lôi cuốn hơi nước nhiệt độ cao",
-      "image": "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?auto=format&fit=crop&w=800&q=80",
-      "gallery": [
-        "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?auto=format&fit=crop&w=800&q=80"
-      ],
-      "variants": [
-        {
-          "capacity": "10ml",
-          "price": 220000,
-          "stock": 40,
-          "sku": "NMH-TT-10"
-        },
-        {
-          "capacity": "30ml",
-          "price": 480000,
-          "salePrice": 430000,
-          "stock": 25,
-          "sku": "NMH-TT-30"
-        }
-      ],
-      "notes": {
-        "top": "Nhựa thông tươi, Lá kim mát lành",
-        "middle": "Tâm gỗ tuyết tùng khô ấm, Da thuộc nhẹ",
-        "base": "Gỗ đàn hương mộc, Rêu phong ẩm"
-      },
-      "benefits": [
-        "Tạo sự vững vàng về tinh thần, xoa dịu hồi hộp khi chuẩn bị thuyết trình hay họp quan trọng",
-        "Làm ấm không gian phòng khách, phòng làm việc vào những ngày mùa đông se lạnh",
-        "Kết hợp tuyệt vời cùng các loại tinh dầu cam chanh để tạo nên hương thơm đa tầng"
-      ],
-      "ritualGuide": [
-        "Khuếch tán 3 giọt Tuyết Tùng kết hợp 3 giọt Bưởi Hồng trong phòng làm việc.",
-        "Nhỏ 2 giọt lên viên đá xông hương đặt tại bàn làm việc hoặc xe hơi."
-      ],
-      "isFeatured": true,
-      "isNew": false,
-      "rating": 4.9,
-      "reviewCount": 75
-    },
-    {
-      "id": "nmh-06",
-      "name": "Dầu Massage Thảo Mộc Thư Giãn Khí Huyết",
-      "slug": "dau-massage-thao-moc-thu-gian-khi-huyet",
-      "category": "massage",
-      "categoryName": "Dầu Massage Thảo Mộc",
-      "subtitle": "Nền dầu thực vật hữu cơ kết hợp 6 loại tinh dầu quý làm ấm cơ và dưỡng da",
-      "description": "Công thức dầu massage sẵn sàng sử dụng (ready-to-use) phối trộn giữa dầu hạt nho, dầu jojoba ép lạnh cùng tinh dầu gừng gió, quế chi, hoa hồi và tràm gió. Thẩm thấu nhanh, không bết rít, giúp lưu thông khí huyết và làm dịu cơn nhức mỏi.",
-      "story": "Kế thừa bài thuốc ngâm rượu xoa bóp cổ truyền của người Dao Đỏ, Nam Mộc Hương đã tinh chỉnh dạng dầu dưỡng thể hiện đại, giữ lại dược tính ấm nóng của các loại củ quả rừng mà vẫn êm ái trên làn da nhạy cảm.",
-      "origin": "Sa Pa, Lào Cai",
-      "extractionMethod": "Ủ chiết thảo mộc trong dầu nền thực vật ép lạnh",
-      "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
-      "gallery": [
-        "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
-      ],
-      "variants": [
-        {
-          "capacity": "50ml",
-          "price": 280000,
-          "salePrice": 250000,
-          "stock": 35,
-          "sku": "NMH-MS-50"
-        },
-        {
-          "capacity": "100ml",
-          "price": 460000,
-          "salePrice": 395000,
-          "stock": 20,
-          "sku": "NMH-MS-100"
-        }
-      ],
-      "notes": {
-        "top": "Vỏ quế ngọt ấm, Hạt gừng cay dịu",
-        "middle": "Tràm gió giải cảm, Hoa hồi thơm mộc",
-        "base": "Dầu nền hạt nho mượt mà, Jojoba dưỡng ẩm"
-      },
-      "benefits": [
-        "Làm ấm cơ bắp, giải tỏa sự co cứng đốt sống cổ và thắt lưng",
-        "Kích thích tuần hoàn máu dưới da, hỗ trợ giấc ngủ sâu hơn sau khi tắm",
-        "Cung cấp vitamin E và acid béo thiết yếu giúp da mịn màng, ẩm mượt"
-      ],
-      "ritualGuide": [
-        "Lấy 5-8 giọt dầu ra lòng bàn tay, xoa ấm hai bàn tay vào nhau rồi massage lên vùng cổ, vai gáy hoặc bắp chân theo chiều xoắn ốc.",
-        "Thích hợp dùng sau khi tắm nước ấm vào buổi tối."
-      ],
-      "isFeatured": false,
-      "isNew": true,
-      "rating": 5,
-      "reviewCount": 46
     }
   ],
   "categories": [
@@ -350,74 +298,8 @@
       "image": "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80"
     }
   ],
-  "orders": [
-    {
-      "id": "0c2b871a-6bbd-49e8-8497-805b868f7a92",
-      "orderCode": "NMH-261018-4838",
-      "createdAt": "2026-10-18T14:50:10.361Z",
-      "customerName": "Le Thi Huong",
-      "customerPhone": "0912345678",
-      "customerEmail": "huong@gmail.com",
-      "shippingAddress": "456 Le Loi, Quan 1, TP. HCM",
-      "note": "Giao gio hanh chinh",
-      "items": [
-        {
-          "productId": "nmh-01",
-          "name": "Tinh Dầu Bưởi Hồng Hoàng Gia",
-          "capacity": "10ml",
-          "price": 175000,
-          "quantity": 2
-        }
-      ],
-      "subtotal": 350000,
-      "shippingFee": 30000,
-      "total": 380000,
-      "status": "pending",
-      "paymentMethod": "cod"
-    },
-    {
-      "id": "96930a79-beee-44cb-90f8-2edc65a21543",
-      "orderCode": "NMH-261018-9496",
-      "createdAt": "2026-10-18T11:58:10.077Z",
-      "customerName": "Nguyễn Hoàng Nam",
-      "customerPhone": "0988654321",
-      "customerEmail": "hoangnam@gmail.com",
-      "shippingAddress": "Số 12 Mai Chí Thọ, Phường An Phú, TP. Thủ Đức, TP. Hồ Chí Minh",
-      "note": "Giao giờ hành chính, gọi trước 15 phút",
-      "items": [
-        {
-          "productId": "nmh-01",
-          "name": "Tinh Dầu Bưởi Hồng Hoàng Gia",
-          "capacity": "10ml",
-          "price": 175000,
-          "quantity": 2
-        }
-      ],
-      "subtotal": 350000,
-      "shippingFee": 30000,
-      "total": 380000,
-      "status": "processing",
-      "paymentMethod": "cod"
-    }
-  ],
+  "orders": [],
   "leads": [
-    {
-      "id": "256d38b9-7648-4902-9145-1524dc096c04",
-      "name": "Nguyen Van A",
-      "phone": "0988776655",
-      "interest": "Tu van thu gian",
-      "createdAt": "2026-10-18T14:50:00.874Z",
-      "status": "new"
-    },
-    {
-      "id": "a1d17358-d49b-4fc1-bfff-f16d607250d7",
-      "name": "Chị Khánh Linh",
-      "phone": "0934567890",
-      "interest": "Ngủ ngon & Giảm căng thẳng",
-      "message": "Địa chỉ nhận mẫu thử: 45 Lê Duẩn, Hà Nội",
-      "createdAt": "2026-10-18T13:14:53.884Z",
-      "status": "new"
-    },
     {
       "id": "lead-01",
       "name": "Chị Mai Lan",
@@ -441,58 +323,60 @@
   "articles": [
     {
       "id": "art-01",
-      "title": "Nghi thức xông hương mỗi sáng: Khởi đầu ngày mới với sự tĩnh tại",
-      "slug": "nghi-thuc-xong-huong-moi-sang-khoi-dau-tinh-tai",
-      "excerpt": "Cách kết hợp tinh dầu bưởi và sả chanh trong 15 phút đầu ngày để đánh thức giác quan và tạo lập không gian làm việc tràn đầy năng lượng tích cực.",
-      "content": "Buổi sáng là thời khắc chuyển giao quý giá của thiên nhiên và cơ thể. Thay vì vội vã với tiếng chuông báo thức điện thoại, hãy dành 5 phút để kích hoạt khứu giác — giác quan nguyên thủy nhất kết nối trực tiếp với trung tâm cảm xúc của não bộ...",
-      "coverImage": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
-      "category": "Nghi Thức Hương",
-      "publishedAt": "2026-10-12",
+      "title": "Những loại tinh dầu phổ biến và công dụng",
+      "slug": "nhung-loai-tinh-dau-pho-bien-va-cong-dung",
+      "excerpt": "Tổng hợp các loại tinh dầu thiên nhiên được ưa chuộng nhất hiện nay và cách lựa chọn phù hợp với nhu cầu thư giãn, khử mùi hay chăm sóc cơ thể.",
+      "content": "Tinh dầu thiên nhiên là món quà quý giá từ cỏ cây hoa lá. Mỗi loại tinh dầu đều sở hữu những đặc tính sinh học riêng biệt: trong khi oải hương giúp an thần dịu nhẹ, bạc hà đánh thức sự tỉnh táo, thì cam ngọt lại mang đến niềm vui tươi tích cực...",
+      "coverImage": "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80",
+      "category": "Kiến Thức Tinh Dầu",
+      "publishedAt": "2026-10-15",
       "readTime": "4 phút đọc",
       "author": "Nam Mộc Hương Editorial"
     },
     {
       "id": "art-02",
-      "title": "Phân biệt tinh dầu thiên nhiên nguyên chất và hương liệu tổng hợp",
-      "slug": "phan-biet-tinh-dau-thien-nhien-va-huong-lieu-tong-hop",
-      "excerpt": "3 dấu hiệu nhận biết trực quan qua màu sắc, độ bay hơi và cảm giác mùi giúp bạn bảo vệ sức khỏe hệ hô hấp của gia đình.",
-      "content": "Trên thị trường hiện nay có rất nhiều sản phẩm gắn mác tinh dầu nhưng thực chất là hóa chất tạo mùi nhân tạo. Tinh dầu nguyên chất chưng cất tự nhiên có đặc tính bay hơi phân tầng, không để lại vết dầu loang trên giấy và mùi hương không nồng gắt...",
-      "coverImage": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
-      "category": "Kiến Thức Tinh Dầu",
-      "publishedAt": "2026-10-05",
-      "readTime": "6 phút đọc",
-      "author": "Dược sĩ Hương Thảo"
+      "title": "Cách tạo không gian sống thư giãn với tinh dầu",
+      "slug": "cach-tao-khong-gian-song-thu-gian-voi-tinh-dau",
+      "excerpt": "Bí quyết bố trí máy xông, lựa chọn mùi hương theo từng phòng chức năng giúp biến ngôi nhà thành spa nghỉ dưỡng thu nhỏ.",
+      "content": "Sau một ngày dài bận rộn giữa phố thị tấp nập, bước chân về nhà và cảm nhận làn hương cỏ cây mộc mạc sẽ giúp mọi mệt mỏi tan biến. Hãy khám phá cách phối hương cho phòng khách, phòng ngủ và không gian làm việc...",
+      "coverImage": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+      "category": "Không Gian Sống",
+      "publishedAt": "2026-10-10",
+      "readTime": "5 phút đọc",
+      "author": "Chuyên gia Mùi Hương"
     },
     {
       "id": "art-03",
-      "title": "Hành trình bảo tồn cây Dó Bầu và những giọt trầm hương Quảng Nam",
-      "slug": "hanh-trinh-bao-ton-cay-do-bau-va-tram-huong-quang-nam",
-      "excerpt": "Câu chuyện phía sau những mẻ chưng cất trầm hương kéo dài 72 giờ và nỗ lực gieo trồng lại những cánh rừng Dó bầu bản địa.",
-      "content": "Trầm hương là một trong những sản vật thiêng liêng nhất của đất rừng xứ Quảng. Tại Nam Mộc Hương, chúng tôi không khai thác trầm tự nhiên trái phép, mà đồng hành cùng người dân địa phương trồng và kích tạo trầm sinh học bền vững...",
-      "coverImage": "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80",
-      "category": "Câu Chuyện Nguyên Liệu",
-      "publishedAt": "2026-09-28",
-      "readTime": "5 phút đọc",
-      "author": "Người Chưng Cất Nam Mộc"
+      "title": "Bảo quản tinh dầu đúng cách để giữ trọn hương thơm",
+      "slug": "bao-quan-tinh-dau-dung-cach-de-giu-tron-huong-thom",
+      "excerpt": "Vì sao tinh dầu cần đựng trong chai thủy tinh hổ phách và cách bảo quản để dược tính không bị oxy hóa hay bay hơi theo thời gian.",
+      "content": "Tinh dầu nguyên chất là tập hợp các hợp chất hữu cơ bay hơi nhạy cảm với ánh sáng và nhiệt độ. Đựng tinh dầu trong chai thủy tinh tối màu và vặn chặt nắp sau khi dùng là nguyên tắc sống còn để bảo vệ dược tính...",
+      "coverImage": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
+      "category": "Mẹo Sử Dụng",
+      "publishedAt": "2026-10-02",
+      "readTime": "3 phút đọc",
+      "author": "Nam Mộc Hương Care"
     }
   ],
   "config": {
     "siteName": "Nam Mộc Hương",
-    "brandTagline": "Tinh túy thảo mộc chắt lọc từ thiên nhiên Việt",
-    "heroHeadline": "Hơi Thở Thiên Nhiên Trong Từng Giọt Hương",
-    "heroSubheadline": "Chưng cất từ thảo mộc bản địa qua phương pháp lôi cuốn hơi nước truyền thống, giữ trọn vẹn tinh chất thuần khiết và năng lượng chữa lành của đất mẹ.",
-    "heroCtaText": "Khám Phá Bộ Sưu Tập",
+    "brandTagline": "Tinh hoa từ thiên nhiên – Cho cuộc sống an lành",
+    "heroHeadline": "Lan tỏa hương thơm\nThuần khiết từ thiên nhiên",
+    "heroSubheadline": "Nam Mộc Hương – tinh hoa từ thiên nhiên, cho một cuộc sống an yên và cân bằng.",
+    "heroCtaText": "Khám phá sản phẩm",
     "heroCtaLink": "#san-pham",
-    "announcementText": "Miễn phí giao hàng toàn quốc cho đơn hàng từ 499.000đ",
-    "hotline": "0988 123 456",
-    "zalo": "0988 123 456",
-    "email": "chamsoc@nammochuong.com",
-    "address": "Số 48 Đường Thảo Mộc, Phường An Phú, TP. Thủ Đức, TP. Hồ Chí Minh",
-    "distilleryAddress": "Vườn thực nghiệm & Xưởng chưng cất: Xã Lộc Tân, Huyện Bảo Lâm, Tỉnh Lâm Đồng",
+    "announcementText": "Tinh dầu thiên nhiên nguyên chất 100% • Miễn phí vận chuyển toàn quốc cho đơn hàng từ 499.000đ",
+    "hotline": "0968 123 456",
+    "zalo": "0968123456",
+    "telegram": "nammochuong_support",
+    "facebook": "https://facebook.com/nammochuong",
+    "email": "hello@nammochuong.com",
+    "address": "Số 123 Đường Hoa Sen, Hà Nội",
+    "distilleryAddress": "Xưởng chưng cất: Xã Lộc Tân, Huyện Bảo Lâm, Tỉnh Lâm Đồng",
     "freeShippingThreshold": 499000,
     "standardShippingFee": 30000,
-    "seoTitle": "Nam Mộc Hương — Tinh Dầu Thiên Nhiên & Liệu Pháp Mùi Hương Thuần Khiết",
-    "seoDescription": "Nam Mộc Hương chuyên cung cấp tinh dầu thiên nhiên nguyên chất chưng cất từ thảo mộc Việt Nam: bưởi, trầm hương, hoa cam, tuyết tùng. Trải nghiệm nghi thức thư giãn và chăm sóc không gian sống.",
-    "seoKeywords": "tinh dầu thiên nhiên, tinh dầu nguyên chất, tinh dầu bưởi, tinh dầu trầm hương, xông phòng, nam mộc hương, liệu pháp mùi hương, aromatherapy"
+    "seoTitle": "Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên",
+    "seoDescription": "Nam Mộc Hương – tinh dầu thiên nhiên nguyên chất chưng cất từ hoa oải hương, bạc hà, tràm trà, cam ngọt và trầm hương. Cho một cuộc sống an yên và cân bằng.",
+    "seoKeywords": "nam mộc hương, tinh dầu thiên nhiên, tinh dầu oải hương, tinh dầu bạc hà, tinh dầu tràm trà, tinh dầu cam ngọt, xông phòng thư giãn"
   }
 }

@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getProducts, createOrder, getOrders, updateOrderStatus } from '@/lib/storage';
+import { getProducts, createOrder, getOrders, updateOrderStatus, deleteOrder } from '@/lib/storage';
 import { generateOrderCode } from '@/lib/utils';
 import { Order, OrderItem } from '@/types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+  'Surrogate-Control': 'no-store',
+};
 
 const FREE_SHIPPING_THRESHOLD = 499000;
 const STANDARD_SHIPPING_FEE = 30000;
@@ -13,17 +24,17 @@ export async function GET(request: Request) {
 
     const orders = await getOrders();
     if (code) {
-      const order = orders.find((o) => o.orderCode === code);
+      const order = orders.find((o) => o.orderCode === code || o.id === code);
       if (!order) {
-        return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404 });
+        return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404, headers: NO_CACHE_HEADERS });
       }
-      return NextResponse.json(order);
+      return NextResponse.json(order, { headers: NO_CACHE_HEADERS });
     }
 
-    return NextResponse.json(orders);
+    return NextResponse.json(orders, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('Error in GET /api/orders:', error);
-    return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -44,7 +55,7 @@ export async function POST(request: Request) {
     if (!customerName || !customerPhone || !shippingAddress || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Vui lòng cung cấp đầy đủ họ tên, số điện thoại, địa chỉ và sản phẩm' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -53,7 +64,7 @@ export async function POST(request: Request) {
     if (phoneClean.length < 10 || phoneClean.length > 11) {
       return NextResponse.json(
         { error: 'Số điện thoại không hợp lệ, vui lòng kiểm tra lại' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -67,7 +78,7 @@ export async function POST(request: Request) {
       if (!product) {
         return NextResponse.json(
           { error: `Sản phẩm ${item.name || item.productId} không tồn tại trong hệ thống` },
-          { status: 400 }
+          { status: 400, headers: NO_CACHE_HEADERS }
         );
       }
 
@@ -109,15 +120,18 @@ export async function POST(request: Request) {
 
     const savedOrder = await createOrder(newOrder);
 
-    return NextResponse.json({
-      success: true,
-      order: savedOrder,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        order: savedOrder,
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error in POST /api/orders:', error);
     return NextResponse.json(
       { error: 'Không thể tạo đơn hàng, vui lòng thử lại sau ít phút' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }
@@ -128,17 +142,46 @@ export async function PATCH(request: Request) {
     const { orderCode, status } = body;
 
     if (!orderCode || !status) {
-      return NextResponse.json({ error: 'Thiếu mã đơn hàng hoặc trạng thái' }, { status: 400 });
+      return NextResponse.json({ error: 'Thiếu mã đơn hàng hoặc trạng thái' }, { status: 400, headers: NO_CACHE_HEADERS });
     }
 
     const updated = await updateOrderStatus(orderCode, status);
     if (!updated) {
-      return NextResponse.json({ error: 'Không tìm thấy đơn hàng để cập nhật' }, { status: 404 });
+      return NextResponse.json({ error: 'Không tìm thấy đơn hàng để cập nhật' }, { status: 404, headers: NO_CACHE_HEADERS });
     }
 
-    return NextResponse.json({ success: true, orderCode, status });
+    return NextResponse.json({ success: true, orderCode, status }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('Error in PATCH /api/orders:', error);
-    return NextResponse.json({ error: 'Lỗi cập nhật đơn hàng' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi cập nhật đơn hàng' }, { status: 500, headers: NO_CACHE_HEADERS });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let code = searchParams.get('code') || searchParams.get('id');
+
+    if (!code) {
+      try {
+        const body = await request.json();
+        code = body.code || body.orderCode || body.id;
+      } catch {
+        // no body
+      }
+    }
+
+    if (!code) {
+      return NextResponse.json({ error: 'Thiếu mã đơn hàng hoặc ID' }, { status: 400, headers: NO_CACHE_HEADERS });
+    }
+
+    const success = await deleteOrder(code);
+    return NextResponse.json(
+      { success, message: 'Đã xóa đơn hàng thành công' },
+      { headers: NO_CACHE_HEADERS }
+    );
+  } catch (error) {
+    console.error('Error in DELETE /api/orders:', error);
+    return NextResponse.json({ error: 'Lỗi xóa đơn hàng' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

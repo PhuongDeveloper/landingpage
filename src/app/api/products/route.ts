@@ -1,14 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getProducts, saveProduct } from '@/lib/storage';
+import { getProducts, saveProduct, deleteProduct } from '@/lib/storage';
 import { Product } from '@/types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
 
 export async function GET() {
   try {
     const products = await getProducts();
-    return NextResponse.json(products);
+    return NextResponse.json(products, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('Error in GET /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi tải sản phẩm' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi tải sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -19,20 +28,23 @@ export async function POST(request: Request) {
     if (!body.name || !body.slug || !body.category || !body.variants || body.variants.length === 0) {
       return NextResponse.json(
         { error: 'Vui lòng cung cấp đầy đủ Tên, Đường dẫn slug, Danh mục và Giá biến thể' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
     const saved = await saveProduct(body);
 
-    return NextResponse.json({
-      success: true,
-      product: saved,
-      message: 'Lưu sản phẩm thành công!',
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        product: saved,
+        message: 'Lưu sản phẩm thành công!',
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error in POST /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi lưu sản phẩm' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi lưu sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -40,13 +52,16 @@ export async function PUT(request: Request) {
   try {
     const body: Product = await request.json();
     if (!body.id || !body.name) {
-      return NextResponse.json({ error: 'Thiếu ID hoặc Tên sản phẩm' }, { status: 400 });
+      return NextResponse.json({ error: 'Thiếu ID hoặc Tên sản phẩm' }, { status: 400, headers: NO_CACHE_HEADERS });
     }
     const saved = await saveProduct(body);
-    return NextResponse.json({ success: true, product: saved, message: 'Cập nhật thành công!' });
+    return NextResponse.json(
+      { success: true, product: saved, message: 'Cập nhật thành công!' },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error in PUT /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi cập nhật sản phẩm' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi cập nhật sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -58,22 +73,23 @@ export async function DELETE(request: Request) {
     if (!id) {
       try {
         const body = await request.json();
-        id = body.id;
+        id = body.id || body.slug;
       } catch {
         // no body
       }
     }
 
     if (!id) {
-      return NextResponse.json({ error: 'Thiếu ID sản phẩm' }, { status: 400 });
+      return NextResponse.json({ error: 'Thiếu ID hoặc Slug sản phẩm' }, { status: 400, headers: NO_CACHE_HEADERS });
     }
 
-    const { deleteProduct } = await import('@/lib/storage');
     const success = await deleteProduct(id);
-    return NextResponse.json({ success, message: 'Đã xóa sản phẩm' });
+    return NextResponse.json(
+      { success, message: 'Đã xóa sản phẩm thành công' },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error in DELETE /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi xóa sản phẩm' }, { status: 500 });
+    return NextResponse.json({ error: 'Lỗi xóa sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
-

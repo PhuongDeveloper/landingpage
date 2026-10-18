@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   description: 'Chia sẻ kiến thức liệu pháp hương thơm (Aromatherapy), phân biệt tinh dầu nguyên chất và các nghi thức thư giãn thân tâm.',
 };
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function KnowledgePage() {
   const articles = await getArticles();

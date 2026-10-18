@@ -7,6 +7,8 @@ import { getProductBySlug, getProducts } from '@/lib/storage';
 import ProductDetailClient from './ProductDetailClient';
 import ProductCard from '@/components/product/ProductCard';
 import { ChevronRight } from 'lucide-react';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface Props {
   params: {
