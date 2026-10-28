@@ -70,7 +70,7 @@ export async function saveCategory(item:CategoryItem):Promise<CategoryItem> {
 }
 export async function deleteCategory(value:string):Promise<boolean> { return localMode ? localDelete('categories',value,'slug') : remove('categories',value,'slug'); }
 
-function product(x:any):Product { return cleanProduct({...x,categoryName:x.category_name,extractionMethod:x.extraction_method,isFeatured:x.is_featured,isNew:x.is_new,reviewCount:x.review_count}); }
+function product(x:any):Product { return cleanProduct({...x,categoryName:x.category_name,extractionMethod:x.extraction_method,ritualGuide:x.ritual_guide||[],isFeatured:x.is_featured,isNew:x.is_new,reviewCount:x.review_count}); }
 export async function getProducts():Promise<Product[]> { return localMode ? readLocal().products.map(cleanProduct) : (await list('products')).map(product); }
 export async function getProductBySlug(slug:string):Promise<Product|null> { return (await getProducts()).find(x=>x.slug===slug||x.id===slug)||null; }
 export async function saveProduct(p:Product):Promise<Product> {
@@ -121,8 +121,14 @@ export async function saveSiteConfig(c:SiteConfig):Promise<SiteConfig> {
   return c;
 }
 
-function article(x:any):Article {return {id:x.id,title:x.title,slug:x.slug,excerpt:x.excerpt,content:x.content,coverImage:x.cover_image,category:x.category,publishedAt:x.published_at,readTime:x.read_time,author:x.author};}
-export async function getArticles():Promise<Article[]> {return localMode?readLocal().articles:(await list('articles','published_at',false)).map(article);}
+const specimenByArticle:Record<string,{old:string;asset:string}>={
+  'photo-1547887537-6158d64c35b3':{old:'photo-1547887537-6158d64c35b3',asset:'/specimens/lavender.svg'},
+  'photo-1506126613408-eca07ce68773':{old:'photo-1506126613408-eca07ce68773',asset:'/specimens/tea-tree.svg'},
+  'photo-1608571423902-eed4a5ad8108':{old:'photo-1608571423902-eed4a5ad8108',asset:'/specimens/mint.svg'},
+};
+function cleanArticle(a:Article):Article {const entry=Object.values(specimenByArticle).find(x=>a.coverImage?.includes(x.old));return entry?{...a,coverImage:entry.asset}:a;}
+function article(x:any):Article {return cleanArticle({id:x.id,title:x.title,slug:x.slug,excerpt:x.excerpt,content:x.content,coverImage:x.cover_image,category:x.category,publishedAt:x.published_at,readTime:x.read_time,author:x.author});}
+export async function getArticles():Promise<Article[]> {return localMode?readLocal().articles.map(cleanArticle):(await list('articles','published_at',false)).map(article);}
 export async function getArticleBySlug(slug:string):Promise<Article|null> {return (await getArticles()).find(x=>x.slug===slug||x.id===slug)||null;}
 export async function saveArticle(a:Article):Promise<Article> {
   if(localMode) localSave('articles',a,true);
