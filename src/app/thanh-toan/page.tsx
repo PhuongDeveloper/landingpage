@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -17,6 +17,9 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
+const FREE_SHIPPING_THRESHOLD = 499000;
+const STANDARD_SHIPPING_FEE = 30000;
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
@@ -30,12 +33,8 @@ export default function CheckoutPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [shipping, setShipping] = useState({threshold:499000,fee:30000});
-  useEffect(()=>{
-    fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>setShipping({threshold:Number(c.freeShippingThreshold)||499000,fee:Number(c.standardShippingFee)||30000})).catch(()=>{});
-  },[]);
 
-  const shippingFee = subtotal >= shipping.threshold ? 0 : shipping.fee;
+  const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
   const handleSubmitOrder = async (e: React.FormEvent) => {

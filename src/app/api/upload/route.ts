@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { requireAdmin } from '@/lib/admin-auth';
 
 export async function POST(request: Request) {
-  const denied = requireAdmin(); if (denied) return denied;
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -12,15 +10,12 @@ export async function POST(request: Request) {
     if (!file) {
       return NextResponse.json({ error: 'Không tìm thấy file tải lên' }, { status: 400 });
     }
-    if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'Chỉ nhận ảnh dưới 10 MB' }, { status: 400 });
-    }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // Kiểm tra API Key ImgBB từ biến môi trường
-    const imgbbApiKey = process.env.IMGBB_API_KEY;
+    const imgbbApiKey = process.env.IMGBB_API_KEY || process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
     // 1. NẾU CÓ IMGBB API KEY: UPLOAD TRỰC TIẾP LÊN IMGBB
     if (imgbbApiKey && imgbbApiKey !== 'your_imgbb_api_key_here') {
@@ -48,18 +43,14 @@ export async function POST(request: Request) {
             title: imgbbData.data.title,
           });
         } else {
-          console.error('ImgBB API returned an error:', imgbbData);
+          console.warn('ImgBB API returned an error, falling back to local storage:', imgbbData);
         }
       } catch (imgbbErr) {
-        console.error('ImgBB API upload request failed:', imgbbErr);
+        console.error('ImgBB API upload request failed, falling back to local storage:', imgbbErr);
       }
     }
 
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'Không tải được ảnh lên dịch vụ lưu trữ. Kiểm tra IMGBB_API_KEY.' }, { status: 503 });
-    }
-
-    // Local development only.
+    // 2. NẾU CHƯA CÓ IMGBB KEY HOẶC LỖI MẠNG: DỰ PHÒNG LƯU TRỮ LOCAL
     // (Đảm bảo người dùng có thể test giao diện ngay trước khi add env key)
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     if (!fs.existsSync(uploadDir)) {

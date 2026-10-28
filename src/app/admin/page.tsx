@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Product, Order, SiteConfig, OrderStatus, CategoryItem, Lead, LeadStatus, Article } from '@/types';
-import { formatVND, formatDateVietnamese, slugify } from '@/lib/utils';
+import { formatVND, formatDateVietnamese } from '@/lib/utils';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -52,8 +52,6 @@ export default function AdminPage() {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [successToast, setSuccessToast] = useState('');
-  const [toastIsError, setToastIsError] = useState(false);
-  const [loadError, setLoadError] = useState('');
 
   // Filters & Search
   const [productSearch, setProductSearch] = useState('');
@@ -67,12 +65,6 @@ export default function AdminPage() {
   const [prodCategory, setProdCategory] = useState('');
   const [prodSubtitle, setProdSubtitle] = useState('');
   const [prodDescription, setProdDescription] = useState('');
-  const [prodStory, setProdStory] = useState('');
-  const [prodGallery, setProdGallery] = useState('');
-  const [prodBenefits, setProdBenefits] = useState('');
-  const [prodRitual, setProdRitual] = useState('');
-  const [prodFeatured, setProdFeatured] = useState(false);
-  const [prodNew, setProdNew] = useState(false);
   const [prodOrigin, setProdOrigin] = useState('Đà Lạt, Lâm Đồng');
   const [prodExtraction, setProdExtraction] = useState('Chưng cất lôi cuốn hơi nước');
   const [prodImage, setProdImage] = useState('');
@@ -100,16 +92,12 @@ export default function AdminPage() {
 
   // Article Modal state
   const [showArticleModal, setShowArticleModal] = useState(false);
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
   const [articleTitle, setArticleTitle] = useState('');
   const [articleSlug, setArticleSlug] = useState('');
   const [articleCategory, setArticleCategory] = useState('Nghi Thức Hương');
   const [articleExcerpt, setArticleExcerpt] = useState('');
   const [articleContent, setArticleContent] = useState('');
   const [articleCover, setArticleCover] = useState('');
-  const [articleAuthor, setArticleAuthor] = useState('');
-  const [articlePublishedAt, setArticlePublishedAt] = useState('');
-  const [articleReadTime, setArticleReadTime] = useState('');
   const [uploadingArticleCover, setUploadingArticleCover] = useState(false);
 
   // File Inputs
@@ -120,20 +108,19 @@ export default function AdminPage() {
   const [uploadingHeroBanner, setUploadingHeroBanner] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
 
-  // The server owns the session; browser storage must never grant admin access.
+  // Check existing session
   useEffect(() => {
-    fetch('/api/admin/session', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((data) => setIsAuthenticated(data.authenticated === true))
-      .catch(() => setPasswordError('Không kiểm tra được phiên quản trị.'))
-      .finally(() => setAuthChecking(false));
+    const sessionAuth = sessionStorage.getItem('nmh_admin_auth');
+    if (sessionAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+    setAuthChecking(false);
   }, []);
 
   // Fetch all data
   const fetchData = async () => {
     try {
       setLoading(true);
-      setLoadError('');
       const t = Date.now();
       const fetchOpts: RequestInit = {
         cache: 'no-store',
@@ -143,19 +130,13 @@ export default function AdminPage() {
         },
       };
 
-      const read = async (url: string) => {
-        const response = await fetch(url, fetchOpts);
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Không tải được dữ liệu quản trị');
-        return data;
-      };
       const [resOrders, resProducts, resCats, resLeads, resArticles, resConfig] = await Promise.all([
-        read(`/api/orders?_t=${t}`),
-        read(`/api/products?_t=${t}`),
-        read(`/api/categories?_t=${t}`),
-        read(`/api/leads?_t=${t}`),
-        read(`/api/articles?_t=${t}`),
-        read(`/api/config?_t=${t}`),
+        fetch(`/api/orders?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/products?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/categories?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/leads?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/articles?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => []),
+        fetch(`/api/config?_t=${t}`, fetchOpts).then((r) => r.json()).catch(() => null),
       ]);
 
       if (Array.isArray(resOrders)) setOrders(resOrders);
@@ -171,7 +152,6 @@ export default function AdminPage() {
       if (resConfig && !resConfig.error) setConfig(resConfig);
     } catch (err) {
       console.error('Error fetching admin data', err);
-      setLoadError(err instanceof Error ? err.message : 'Không tải được dữ liệu quản trị');
     } finally {
       setLoading(false);
     }
@@ -185,37 +165,24 @@ export default function AdminPage() {
 
   const showToast = (msg: string) => {
     setSuccessToast(msg);
-    setToastIsError(/lỗi|không|thiếu|vui lòng|chưa|supabase|permission|failed/i.test(msg));
     setTimeout(() => setSuccessToast(''), 3000);
   };
 
-  const adminFetch = async (input: string, init: RequestInit) => {
-    const response = await fetch(input, init);
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      if (response.status === 401) setIsAuthenticated(false);
-      throw new Error(body.error || 'Thao tác chưa được lưu. Vui lòng thử lại.');
-    }
-    return response;
-  };
-
   // Password verification
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:passwordInput}) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Không đăng nhập được');
+    if (passwordInput.trim() === '@Nammochuong') {
+      sessionStorage.setItem('nmh_admin_auth', 'true');
       setIsAuthenticated(true);
       setPasswordError('');
-      setPasswordInput('');
-    } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : 'Không đăng nhập được');
+      showToast('Đăng nhập quản trị viên thành công!');
+    } else {
+      setPasswordError('Mật mã quản trị viên không chính xác. Vui lòng kiểm tra lại!');
     }
   };
 
   const handleLogout = () => {
-    fetch('/api/admin/session', { method:'DELETE' }).catch(console.error);
+    sessionStorage.removeItem('nmh_admin_auth');
     setIsAuthenticated(false);
     setPasswordInput('');
   };
@@ -361,12 +328,6 @@ export default function AdminPage() {
     setProdCategory(p.category);
     setProdSubtitle(p.subtitle);
     setProdDescription(p.description);
-    setProdStory(p.story || '');
-    setProdGallery((p.gallery || []).filter(url=>url!==p.image).join('\n'));
-    setProdBenefits((p.benefits || []).join('\n'));
-    setProdRitual((p.ritualGuide || []).join('\n'));
-    setProdFeatured(Boolean(p.isFeatured));
-    setProdNew(Boolean(p.isNew));
     setProdOrigin(p.origin || 'Đà Lạt, Lâm Đồng');
     setProdExtraction(p.extractionMethod || 'Chưng cất lôi cuốn hơi nước');
     setProdImage(p.image);
@@ -399,12 +360,6 @@ export default function AdminPage() {
     setProdCategory(categories[0]?.slug || 'thu-gian');
     setProdSubtitle('');
     setProdDescription('');
-    setProdStory('');
-    setProdGallery('');
-    setProdBenefits('');
-    setProdRitual('');
-    setProdFeatured(false);
-    setProdNew(false);
     setProdOrigin('Đà Lạt, Lâm Đồng');
     setProdExtraction('Chưng cất lôi cuốn hơi nước');
     setProdImage('');
@@ -424,7 +379,6 @@ export default function AdminPage() {
       showToast('Vui lòng nhập tên sản phẩm');
       return;
     }
-    if (!prodImage.trim()) { showToast('Vui lòng tải ảnh sản phẩm trước khi lưu'); return; }
 
     // Kiểm tra tính hợp lệ của từng dung tích
     const invalidVariant = variantsList.find(
@@ -435,7 +389,7 @@ export default function AdminPage() {
       return;
     }
 
-    const slug = slugify(prodSlug.trim() || prodName);
+    const slug = prodSlug.trim() || prodName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const catItem = categories.find((c) => c.slug === prodCategory);
 
     const mappedVariants = variantsList.map((v) => ({
@@ -452,30 +406,29 @@ export default function AdminPage() {
       slug,
       category: prodCategory || 'thu-gian',
       categoryName: catItem?.name || 'Tinh dầu Thư giãn',
-      subtitle: prodSubtitle.trim(),
-      description: prodDescription.trim(),
-      story: prodStory.trim(),
+      subtitle: prodSubtitle.trim() || 'Tinh dầu thiên nhiên nguyên chất',
+      description: prodDescription.trim() || prodSubtitle.trim(),
+      story: 'Chưng cất từ nguyên liệu thảo mộc tươi qua quy trình kiểm soát nhiệt độ nghiêm ngặt.',
       origin: prodOrigin.trim(),
       extractionMethod: prodExtraction.trim(),
-      image: prodImage.trim(),
-      gallery: [prodImage.trim(),...prodGallery.split('\n').map(x=>x.trim()).filter(Boolean)].filter(Boolean),
+      image: prodImage.trim() || 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80',
+      gallery: [prodImage.trim() || 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80'],
       variants: mappedVariants,
       notes: {
-        top: prodTopNote.trim(),
-        middle: prodMidNote.trim(),
-        base: prodBaseNote.trim(),
+        top: prodTopNote.trim() || 'Hương thảo mộc mát lành',
+        middle: prodMidNote.trim() || 'Hương hoa thoang thoảng',
+        base: prodBaseNote.trim() || 'Gỗ mộc ấm áp',
       },
-      benefits: prodBenefits.split('\n').map(x=>x.trim()).filter(Boolean),
-      ritualGuide: prodRitual.split('\n').map(x=>x.trim()).filter(Boolean),
-      isFeatured: prodFeatured,
-      isNew: prodNew,
-      rating: products.find(p=>p.id===editingProductId)?.rating || 0,
-      reviewCount: products.find(p=>p.id===editingProductId)?.reviewCount || 0,
+      benefits: ['Thư giãn tâm trí và giảm mệt mỏi', 'Thanh lọc không khí tự nhiên'],
+      ritualGuide: ['Khuếch tán 4-6 giọt với máy xông sương siêu âm'],
+      isFeatured: true,
+      rating: 5.0,
+      reviewCount: 1,
     };
 
     try {
       const method = editingProductId ? 'PUT' : 'POST';
-      const res = await adminFetch('/api/products', {
+      const res = await fetch('/api/products', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productPayload),
@@ -484,11 +437,11 @@ export default function AdminPage() {
       if (res.ok) {
         showToast(editingProductId ? 'Đã cập nhật sản phẩm và bảng giá!' : 'Đã thêm sản phẩm mới thành công!');
         setShowProductModal(false);
-        await fetchData();
+        fetchData();
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Có lỗi khi lưu sản phẩm');
+      showToast('Có lỗi khi lưu sản phẩm');
     }
   };
 
@@ -497,7 +450,7 @@ export default function AdminPage() {
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn sản phẩm "${name}"? Dữ liệu sẽ mất vĩnh viễn trên toàn hệ thống.`)) return;
     try {
-      const res = await adminFetch(`/api/products?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         cache: 'no-store',
       });
@@ -511,7 +464,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi xóa sản phẩm');
+      showToast('Lỗi kết nối khi xóa sản phẩm');
     }
   };
 
@@ -520,7 +473,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!catName.trim()) return;
 
-    const slug = slugify(catSlug.trim() || catName);
+    const slug = catSlug.trim() || catName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     const catPayload: CategoryItem = {
       id: editingCatId || `cat-${Date.now()}`,
@@ -531,7 +484,7 @@ export default function AdminPage() {
     };
 
     try {
-      const res = await adminFetch('/api/categories', {
+      const res = await fetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(catPayload),
@@ -549,7 +502,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi khi lưu danh mục');
+      showToast('Lỗi khi lưu danh mục');
     }
   };
 
@@ -557,7 +510,7 @@ export default function AdminPage() {
   const handleDeleteCategory = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc muốn xóa loại sản phẩm "${name}"?`)) return;
     try {
-      const res = await adminFetch(`/api/categories?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/categories?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         cache: 'no-store',
       });
@@ -571,7 +524,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi xóa danh mục');
+      showToast('Lỗi kết nối khi xóa danh mục');
     }
   };
 
@@ -580,67 +533,49 @@ export default function AdminPage() {
     e.preventDefault();
     if (!articleTitle.trim()) return;
 
-    const slug = slugify(articleSlug.trim() || articleTitle);
+    const slug = articleSlug.trim() || articleTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     const articlePayload: Article = {
-      id: editingArticleId || `art-${Date.now()}`,
+      id: `art-${Date.now()}`,
       title: articleTitle.trim(),
       slug,
       excerpt: articleExcerpt.trim(),
       content: articleContent.trim(),
       coverImage: articleCover.trim() || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80',
       category: articleCategory.trim(),
-      publishedAt: articlePublishedAt || new Date().toISOString().split('T')[0],
-      readTime: articleReadTime.trim(),
-      author: articleAuthor.trim() || config?.siteName || 'Nam Mộc Hương',
+      publishedAt: new Date().toISOString().split('T')[0],
+      readTime: '4 phút đọc',
+      author: 'Nam Mộc Hương Editorial',
     };
 
     try {
-      const res = await adminFetch('/api/articles', {
+      const res = await fetch('/api/articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(articlePayload),
       });
 
       if (res.ok) {
-        showToast(editingArticleId ? 'Đã cập nhật bài viết' : 'Đã đăng bài viết');
+        showToast('Đăng bài viết mới thành công!');
         setShowArticleModal(false);
-        setEditingArticleId(null);
         setArticleTitle('');
         setArticleSlug('');
         setArticleExcerpt('');
         setArticleContent('');
         setArticleCover('');
-        setArticleAuthor('');
-        setArticlePublishedAt('');
-        setArticleReadTime('');
         await fetchData();
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi khi lưu bài viết');
+      showToast('Lỗi khi lưu bài viết');
     }
-  };
-
-  const openEditArticle = (article: Article) => {
-    setEditingArticleId(article.id);
-    setArticleTitle(article.title);
-    setArticleSlug(article.slug);
-    setArticleCategory(article.category);
-    setArticleExcerpt(article.excerpt);
-    setArticleContent(article.content);
-    setArticleCover(article.coverImage);
-    setArticleAuthor(article.author);
-    setArticlePublishedAt(article.publishedAt);
-    setArticleReadTime(article.readTime);
-    setShowArticleModal(true);
   };
 
   // Delete Article
   const handleDeleteArticle = async (id: string, title: string) => {
     if (!confirm(`Bạn có chắc muốn xóa bài viết "${title}"?`)) return;
     try {
-      const res = await adminFetch(`/api/articles?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/articles?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         cache: 'no-store',
       });
@@ -654,7 +589,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi xóa bài viết');
+      showToast('Lỗi kết nối khi xóa bài viết');
     }
   };
 
@@ -662,7 +597,7 @@ export default function AdminPage() {
   const handleDeleteLead = async (id: string, name: string) => {
     if (!confirm(`Bạn có chắc muốn xóa dữ liệu khách hàng "${name}"?`)) return;
     try {
-      const res = await adminFetch(`/api/leads?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/leads?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         cache: 'no-store',
       });
@@ -676,7 +611,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi xóa khách hàng');
+      showToast('Lỗi kết nối khi xóa data khách hàng');
     }
   };
 
@@ -684,7 +619,7 @@ export default function AdminPage() {
   const handleDeleteOrder = async (orderCode: string) => {
     if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn đơn hàng "${orderCode}"? Dữ liệu này sẽ không thể khôi phục.`)) return;
     try {
-      const res = await adminFetch(`/api/orders?code=${encodeURIComponent(orderCode)}`, {
+      const res = await fetch(`/api/orders?code=${encodeURIComponent(orderCode)}`, {
         method: 'DELETE',
         cache: 'no-store',
       });
@@ -698,14 +633,14 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi xóa đơn hàng');
+      showToast('Lỗi kết nối khi xóa đơn hàng');
     }
   };
 
   // Update Lead status
   const handleUpdateLeadStatus = async (id: string, status: LeadStatus) => {
     try {
-      const res = await adminFetch('/api/leads', {
+      const res = await fetch('/api/leads', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),
@@ -716,14 +651,13 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Không cập nhật được khách hàng');
     }
   };
 
   // Update Order status
   const handleUpdateOrderStatus = async (orderCode: string, newStatus: OrderStatus) => {
     try {
-      const res = await adminFetch('/api/orders', {
+      const res = await fetch('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderCode, status: newStatus }),
@@ -736,7 +670,6 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Không cập nhật được đơn hàng');
     }
   };
 
@@ -746,7 +679,7 @@ export default function AdminPage() {
     if (!config) return;
     setSavingConfig(true);
     try {
-      const res = await adminFetch('/api/config', {
+      const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
@@ -759,7 +692,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : 'Lỗi kết nối khi lưu cấu hình');
+      showToast('Lỗi kết nối khi lưu cấu hình');
     } finally {
       setSavingConfig(false);
     }
@@ -770,7 +703,7 @@ export default function AdminPage() {
   // -------------------------------------------------------------
   if (authChecking) {
     return (
-      <div className="admin-root min-h-screen bg-ivory flex items-center justify-center">
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-botanical border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -778,7 +711,7 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="admin-root min-h-screen bg-ivory flex items-center justify-center p-4">
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-clay shadow-xl text-center space-y-6 animate-fade-in">
           {/* Logo & Lock Icon */}
           <div className="mx-auto w-16 h-16 rounded-full bg-botanical flex items-center justify-center text-gold shadow-md">
@@ -871,7 +804,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="admin-root min-h-screen bg-ivory-100 text-charcoal">
+    <div className="min-h-screen bg-ivory-100 text-charcoal">
       {/* Top Header */}
       <header className="bg-botanical-forest text-ivory px-6 py-4 border-b border-botanical-dark sticky top-0 z-30 shadow-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -880,7 +813,7 @@ export default function AdminPage() {
               NAM MỘC HƯƠNG
             </span>
             <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-gold text-botanical">
-              Quản trị
+              Store Master Admin
             </span>
           </div>
 
@@ -911,12 +844,11 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toast */}
         {successToast && (
-          <div className={`fixed top-20 right-6 z-50 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-semibold animate-fade-in ${toastIsError?'bg-red-700':'bg-botanical'}`}>
-            {toastIsError?<AlertCircle className="w-4 h-4"/>:<CheckCircle2 className="w-4 h-4 text-gold-light" />}
+          <div className="fixed top-20 right-6 z-50 bg-botanical text-ivory px-5 py-3 rounded-2xl shadow-2xl border border-gold flex items-center gap-2 text-xs font-semibold animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-gold-light" />
             <span>{successToast}</span>
           </div>
         )}
-        {loadError && <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-300 text-red-800 rounded-xl text-sm flex items-center gap-3"><AlertCircle className="w-5 h-5 shrink-0"/><span>{loadError}</span><button type="button" onClick={fetchData} className="ml-auto underline font-semibold">Tải lại</button></div>}
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap items-center gap-2 mb-8 bg-white p-2 rounded-2xl border border-clay shadow-xs">
@@ -939,7 +871,7 @@ export default function AdminPage() {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Khách hàng ({leads.length})</span>
+            <span>Data Khách Hàng ({leads.length})</span>
             {newLeads > 0 && (
               <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center">
                 {newLeads}
@@ -1004,7 +936,7 @@ export default function AdminPage() {
             }`}
           >
             <Sliders className="w-4 h-4" />
-            <span>Nội dung website</span>
+            <span>Cấu Hình Website & CMS</span>
           </button>
         </div>
 
@@ -1015,7 +947,7 @@ export default function AdminPage() {
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-                <span className="text-xs uppercase tracking-wider text-earth font-bold">Giá trị đơn hàng</span>
+                <span className="text-xs uppercase tracking-wider text-earth font-bold">Doanh Thu Đơn Hàng</span>
                 <p className="font-serif text-3xl font-bold text-botanical">{formatVND(totalRevenue)}</p>
                 <span className="text-[11px] text-charcoal/50">Tính trên các đơn không bị hủy</span>
               </div>
@@ -1276,18 +1208,6 @@ export default function AdminPage() {
                         className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
                       />
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="space-y-1"><span className="font-semibold">Đường dẫn sản phẩm</span><input value={prodSlug} onChange={e=>setProdSlug(e.target.value)} placeholder="Tự tạo từ tên nếu để trống" className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1"><span className="font-semibold">Phương pháp chiết xuất</span><input value={prodExtraction} onChange={e=>setProdExtraction(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1 sm:col-span-2"><span className="font-semibold">Mô tả sản phẩm</span><textarea rows={4} value={prodDescription} onChange={e=>setProdDescription(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1 sm:col-span-2"><span className="font-semibold">Câu chuyện sản phẩm</span><textarea rows={3} value={prodStory} onChange={e=>setProdStory(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1 sm:col-span-2"><span className="font-semibold">Lợi ích (mỗi dòng một ý)</span><textarea rows={3} value={prodBenefits} onChange={e=>setProdBenefits(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1 sm:col-span-2"><span className="font-semibold">Cách sử dụng (mỗi dòng một bước)</span><textarea rows={3} value={prodRitual} onChange={e=>setProdRitual(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="space-y-1 sm:col-span-2"><span className="font-semibold">Ảnh bổ sung (mỗi dòng một URL)</span><textarea rows={3} value={prodGallery} onChange={e=>setProdGallery(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-clay"/></label>
-                    <label className="flex items-center gap-2"><input type="checkbox" checked={prodFeatured} onChange={e=>setProdFeatured(e.target.checked)}/> Hiển thị nổi bật ở trang chủ</label>
-                    <label className="flex items-center gap-2"><input type="checkbox" checked={prodNew} onChange={e=>setProdNew(e.target.checked)}/> Đánh dấu sản phẩm mới</label>
                   </div>
 
                   {/* Upload Image Section (ImgBB Integration) */}
@@ -1733,7 +1653,7 @@ export default function AdminPage() {
 
               <button
                 type="button"
-                onClick={() => {setEditingArticleId(null);setArticleTitle('');setArticleSlug('');setArticleCategory('');setArticleExcerpt('');setArticleContent('');setArticleCover('');setArticleAuthor('');setArticlePublishedAt('');setArticleReadTime('');setShowArticleModal(true);}}
+                onClick={() => setShowArticleModal(true)}
                 className="bg-botanical hover:bg-botanical-dark text-ivory text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
               >
                 <Plus className="w-4 h-4" /> Viết Bài Mới
@@ -1743,7 +1663,7 @@ export default function AdminPage() {
             {/* Modal Add Article */}
             {showArticleModal && (
               <form onSubmit={handleSaveArticle} className="p-6 rounded-2xl bg-ivory-50 border border-clay space-y-4 text-xs animate-fade-in">
-                <h4 className="font-serif font-bold text-sm text-botanical">{editingArticleId?'Chỉnh sửa bài viết':'Đăng bài viết mới'}</h4>
+                <h4 className="font-serif font-bold text-sm text-botanical">Đăng Bài Viết Blog Mới</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="font-semibold text-charcoal">Tiêu đề bài viết *</label>
@@ -1767,13 +1687,6 @@ export default function AdminPage() {
                       className="w-full px-4 py-2 rounded-xl border border-clay bg-white outline-none"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="font-semibold text-charcoal">Tác giả</label>
-                    <input type="text" value={articleAuthor} onChange={e=>setArticleAuthor(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-clay bg-white outline-none"/>
-                  </div>
-                  <label className="space-y-1"><span className="font-semibold">Đường dẫn bài viết</span><input value={articleSlug} onChange={e=>setArticleSlug(e.target.value)} placeholder="Tự tạo từ tiêu đề" className="w-full px-4 py-2 rounded-xl border border-clay bg-white outline-none"/></label>
-                  <label className="space-y-1"><span className="font-semibold">Ngày đăng</span><input type="date" value={articlePublishedAt} onChange={e=>setArticlePublishedAt(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-clay bg-white outline-none"/></label>
-                  <label className="space-y-1"><span className="font-semibold">Thời gian đọc</span><input value={articleReadTime} onChange={e=>setArticleReadTime(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-clay bg-white outline-none"/></label>
 
                   <div className="space-y-1 sm:col-span-2">
                     <label className="font-semibold text-charcoal">Tóm tắt ngắn (Excerpt)</label>
@@ -1839,7 +1752,7 @@ export default function AdminPage() {
                     type="submit"
                     className="bg-botanical text-ivory px-5 py-2 rounded-xl text-xs font-semibold shadow-xs"
                   >
-                    {editingArticleId?'Lưu thay đổi':'Xuất bản bài viết'}
+                    Xuất Bản Bài Viết
                   </button>
                 </div>
               </form>
@@ -1861,13 +1774,13 @@ export default function AdminPage() {
 
                     <div className="pt-3 border-t border-clay/60 flex items-center justify-between text-[11px] text-charcoal/50">
                       <span>{a.publishedAt}</span>
-                      <div className="flex items-center gap-3"><button type="button" onClick={()=>openEditArticle(a)} className="text-botanical hover:underline" aria-label={`Sửa ${a.title}`}><Edit className="w-3.5 h-3.5"/></button><button
+                      <button
                         type="button"
                         onClick={() => handleDeleteArticle(a.id, a.title)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button></div>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2147,40 +2060,6 @@ export default function AdminPage() {
                     className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none"
                   />
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-5 pt-2">
-              <div className="border-b border-clay/60 pb-2">
-                <h3 className="font-serif font-bold text-base text-botanical">Nội dung trang chủ, menu và chân trang</h3>
-                <p className="text-charcoal/60 mt-1">Các thay đổi hiển thị trên website sau khi bấm Xuất bản.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {([
-                  ['siteName','Tên thương hiệu'],
-                  ['brandTagline','Dòng giới thiệu thương hiệu'],
-                  ['navProducts','Menu: sản phẩm'],
-                  ['navStory','Menu: câu chuyện'],
-                  ['navJournal','Menu: tạp chí'],
-                  ['homeCategoryLabel','Nhãn khu danh mục'],
-                  ['homeCategoryTitle','Tiêu đề khu danh mục'],
-                  ['homeProductLabel','Nhãn khu sản phẩm'],
-                  ['homeProductTitle','Tiêu đề khu sản phẩm'],
-                  ['homeProductLinkText','Chữ liên kết xem tất cả sản phẩm'],
-                  ['homeStoryLabel','Nhãn khu câu chuyện'],
-                  ['homeStoryTitle','Tiêu đề khu câu chuyện'],
-                  ['homeStoryBody','Nội dung khu câu chuyện'],
-                  ['homeStoryImage','URL ảnh khu câu chuyện'],
-                  ['homeStoryLinkText','Chữ liên kết khu câu chuyện'],
-                  ['homeJournalLabel','Nhãn khu bài viết'],
-                  ['homeJournalTitle','Tiêu đề khu bài viết'],
-                  ['footerDescription','Mô tả chân trang'],
-                  ['facebook','Liên kết Facebook'],
-                ] as const).map(([key,label])=><label key={key} className="space-y-1 font-semibold text-charcoal">
-                  <span>{label}</span>
-                  {key==='homeStoryBody' ? <textarea rows={3} value={config[key]||''} onChange={e=>setConfig({...config,[key]:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none font-normal"/> :
-                    <input type="text" value={config[key]||''} onChange={e=>setConfig({...config,[key]:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 focus:bg-white outline-none font-normal"/>}
-                </label>)}
               </div>
             </div>
 

@@ -132,20 +132,4 @@ export interface SiteConfig {
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string;
-  homeCategoryLabel?: string;
-  homeCategoryTitle?: string;
-  homeProductLabel?: string;
-  homeProductTitle?: string;
-  homeProductLinkText?: string;
-  homeStoryLabel?: string;
-  homeStoryTitle?: string;
-  homeStoryBody?: string;
-  homeStoryImage?: string;
-  homeStoryLinkText?: string;
-  homeJournalLabel?: string;
-  homeJournalTitle?: string;
-  footerDescription?: string;
-  navProducts?: string;
-  navStory?: string;
-  navJournal?: string;
 }

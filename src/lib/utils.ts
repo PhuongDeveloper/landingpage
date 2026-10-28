@@ -16,13 +16,9 @@ export function formatNumber(amount: number): string {
   return new Intl.NumberFormat('vi-VN').format(amount);
 }
 
-export function slugify(value:string):string {
-  return value.toLowerCase().replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-}
-
 export function generateOrderCode(): string {
   const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-  const randomSuffix = Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   return `NMH-${dateStr}-${randomSuffix}`;
 }
 

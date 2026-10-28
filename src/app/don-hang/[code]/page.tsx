@@ -5,9 +5,6 @@ import { getOrderByCode } from '@/lib/storage';
 import { formatVND, formatDateVietnamese } from '@/lib/utils';
 import { CheckCircle2, Clock, Truck, PackageCheck, AlertCircle, Phone, ArrowLeft, QrCode } from 'lucide-react';
 
-export const dynamic='force-dynamic';
-export const metadata={robots:{index:false,follow:false}};
-
 interface Props {
   params: {
     code: string;

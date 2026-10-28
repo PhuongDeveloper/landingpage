@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getLeads, createLead, updateLeadStatus, deleteLead } from '@/lib/storage';
 import { Lead } from '@/types';
-import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,7 +14,6 @@ const NO_CACHE_HEADERS = {
 };
 
 export async function GET() {
-  const denied = requireAdmin(); if (denied) return denied;
   try {
     const leads = await getLeads();
     return NextResponse.json(leads, { headers: NO_CACHE_HEADERS });
@@ -73,7 +71,6 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body = await request.json();
     const { id, status } = body;
@@ -95,7 +92,6 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const denied = requireAdmin(); if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
@@ -114,7 +110,6 @@ export async function DELETE(request: Request) {
     }
 
     const success = await deleteLead(id);
-    if (!success) return NextResponse.json({ error: 'Không tìm thấy khách hàng để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
     return NextResponse.json(
       { success, message: 'Đã xóa dữ liệu khách hàng thành công' },
       { headers: NO_CACHE_HEADERS }

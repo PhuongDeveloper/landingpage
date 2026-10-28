@@ -1,5 +1,4 @@
 import { MetadataRoute } from 'next';
-export const dynamic='force-dynamic';
 import { getProducts, getArticles } from '@/lib/storage';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
