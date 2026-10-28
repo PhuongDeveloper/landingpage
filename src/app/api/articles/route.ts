@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getArticles, saveArticle, deleteArticle } from '@/lib/storage';
 import { Article } from '@/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,6 +25,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body: Article = await request.json();
     if (!body.title || !body.slug) {
@@ -40,11 +42,12 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error in POST /api/articles:', error);
-    return NextResponse.json({ error: 'Lỗi lưu bài viết' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi lưu bài viết' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
 export async function DELETE(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
@@ -63,12 +66,13 @@ export async function DELETE(request: Request) {
     }
 
     const success = await deleteArticle(id);
+    if (!success) return NextResponse.json({ error: 'Không tìm thấy bài viết để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
     return NextResponse.json(
       { success, message: 'Đã xóa bài viết thành công' },
       { headers: NO_CACHE_HEADERS }
     );
   } catch (error) {
     console.error('Error in DELETE /api/articles:', error);
-    return NextResponse.json({ error: 'Lỗi xóa bài viết' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi xóa bài viết' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

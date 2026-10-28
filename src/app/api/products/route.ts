@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getProducts, saveProduct, deleteProduct } from '@/lib/storage';
 import { Product } from '@/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -22,6 +23,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body: Product = await request.json();
 
@@ -44,11 +46,12 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error in POST /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi lưu sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi lưu sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
 export async function PUT(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body: Product = await request.json();
     if (!body.id || !body.name) {
@@ -61,11 +64,12 @@ export async function PUT(request: Request) {
     );
   } catch (error) {
     console.error('Error in PUT /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi cập nhật sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi cập nhật sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
 export async function DELETE(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
@@ -84,12 +88,13 @@ export async function DELETE(request: Request) {
     }
 
     const success = await deleteProduct(id);
+    if (!success) return NextResponse.json({ error: 'Không tìm thấy sản phẩm để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
     return NextResponse.json(
       { success, message: 'Đã xóa sản phẩm thành công' },
       { headers: NO_CACHE_HEADERS }
     );
   } catch (error) {
     console.error('Error in DELETE /api/products:', error);
-    return NextResponse.json({ error: 'Lỗi xóa sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi xóa sản phẩm' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

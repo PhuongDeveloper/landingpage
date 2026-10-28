@@ -1,627 +1,132 @@
-import fs from 'fs';
-import path from 'path';
-import { Product, Order, Article, SiteConfig, CategoryItem, Lead } from '@/types';
-import {
-  initialProducts,
-  initialArticles,
-  initialSiteConfig,
-  initialCategories,
-  initialLeads,
-} from '@/data/initialData';
+import 'server-only';
+import fs from 'node:fs';
+import path from 'node:path';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { initialProducts, initialCategories, initialArticles, initialSiteConfig } from '@/data/initialData';
+import type { Product, CategoryItem, Article, SiteConfig, Lead, Order } from '@/types';
 
-interface StoreData {
-  products: Product[];
-  categories: CategoryItem[];
-  orders: Order[];
-  leads: Lead[];
-  articles: Article[];
-  config: SiteConfig;
+type Store = { products: Product[]; categories: CategoryItem[]; articles: Article[]; orders: Order[]; leads: Lead[]; config: SiteConfig };
+type Table = 'products' | 'categories' | 'articles' | 'orders' | 'leads' | 'site_config';
+const file = path.join(process.cwd(), '.data', 'store.json');
+const localMode = process.env.NODE_ENV !== 'production' && !isSupabaseConfigured;
+const specimenBySlug: Record<string,{old:string;asset:string}> = {
+  'tinh-dau-oai-huong':{old:'photo-1547887537-6158d64c35b3',asset:'/specimens/lavender.svg'},
+  'tinh-dau-bac-ha':{old:'photo-1608571423902-eed4a5ad8108',asset:'/specimens/mint.svg'},
+  'tinh-dau-tram-tra':{old:'photo-1540555700478-4be289fbecef',asset:'/specimens/tea-tree.svg'},
+  'tinh-dau-cam-ngot':{old:'photo-1617897903246-719242758050',asset:'/specimens/orange.svg'},
+  'tinh-dau-tram-huong-rung-gia':{old:'photo-1595981267035-7b04ca84a82d',asset:'/specimens/agarwood.svg'},
+};
+const specimenByCategory:Record<string,{old:string;asset:string}>={
+  'thu-gian':{old:'photo-1547887537-6158d64c35b3',asset:'/specimens/lavender.svg'},
+  'thanh-loc':{old:'photo-1608571423902-eed4a5ad8108',asset:'/specimens/tea-tree.svg'},
+  'tap-trung':{old:'photo-1540555700478-4be289fbecef',asset:'/specimens/mint.svg'},
+  'phong-thuy':{old:'photo-1595981267035-7b04ca84a82d',asset:'/specimens/agarwood.svg'},
+};
+function cleanProduct(p:Product):Product {const match=specimenBySlug[p.slug];return match&&p.image?.includes(match.old)?{...p,image:match.asset,gallery:[match.asset]}:p;}
+function cleanCategory(c:CategoryItem):CategoryItem {const match=specimenByCategory[c.slug];return match&&c.image?.includes(match.old)?{...c,image:match.asset}:c;}
+function client() { if (!supabase) throw new Error('Thiếu NEXT_PUBLIC_SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trên máy chủ'); return supabase; }
+function check(error: {message:string;code?:string}|null, action:string) { if (error) throw new Error(action + ': ' + error.message + (error.code ? ' ('+error.code+')' : '')); }
+function readLocal(): Store {
+  if (!fs.existsSync(file)) {
+    fs.mkdirSync(path.dirname(file), {recursive:true});
+    fs.writeFileSync(file, JSON.stringify({products:initialProducts,categories:initialCategories,articles:initialArticles,orders:[],leads:[],config:initialSiteConfig}));
+  }
+  return JSON.parse(fs.readFileSync(file,'utf8'));
 }
-
-const DATA_DIR = path.join(process.cwd(), '.data');
-const DATA_FILE = path.join(DATA_DIR, 'store.json');
-
-// In-memory store singleton: acts as primary runtime source of truth.
-// Eliminates disk race conditions, EBUSY Windows file-locking on concurrent requests,
-// and ensures deleted products/categories/leads/orders NEVER get resurrected by fallback reads.
-let memoryStore: StoreData | null = null;
-
-function ensureLocalStore(): StoreData {
-  if (memoryStore) {
-    return memoryStore;
-  }
-
-  if (typeof window !== 'undefined') {
-    memoryStore = {
-      products: [],
-      categories: [],
-      orders: [],
-      leads: [],
-      articles: [],
-      config: initialSiteConfig,
-    };
-    return memoryStore;
-  }
-
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-
-    if (!fs.existsSync(DATA_FILE)) {
-      const initialData: StoreData = {
-        products: [...initialProducts],
-        categories: [...initialCategories],
-        orders: [],
-        leads: [...initialLeads],
-        articles: [...initialArticles],
-        config: { ...initialSiteConfig },
-      };
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-      memoryStore = initialData;
-      return memoryStore;
-    }
-
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    memoryStore = {
-      products: Array.isArray(parsed.products) ? parsed.products : [],
-      categories: Array.isArray(parsed.categories) ? parsed.categories : [],
-      orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-      leads: Array.isArray(parsed.leads) ? parsed.leads : [],
-      articles: Array.isArray(parsed.articles) ? parsed.articles : [],
-      config: parsed.config || { ...initialSiteConfig },
-    };
-    return memoryStore;
-  } catch (err) {
-    console.error('Error reading local store from disk:', err);
-    if (!memoryStore) {
-      memoryStore = {
-        products: [...initialProducts],
-        categories: [...initialCategories],
-        orders: [],
-        leads: [...initialLeads],
-        articles: [...initialArticles],
-        config: { ...initialSiteConfig },
-      };
-    }
-    return memoryStore;
-  }
+function writeLocal(store:Store) { fs.writeFileSync(file,JSON.stringify(store,null,2)); }
+function localSave<K extends keyof Store>(key:K, item:any, prepend=false) {
+  const store=readLocal(); const list=(store[key] as any[]).filter(x=>x.id!==item.id);
+  prepend ? list.unshift(item) : list.push(item); (store as any)[key]=list; writeLocal(store);
 }
-
-function commitLocalStore(data: StoreData) {
-  memoryStore = data;
-  if (typeof window !== 'undefined') return;
-
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing local store to disk:', err);
-  }
+function localDelete<K extends keyof Store>(key:K, value:string, alias?:string) {
+  const store=readLocal(); const list=store[key] as any[]; const next=list.filter(x=>x.id!==value&&(!alias||x[alias]!==value));
+  (store as any)[key]=next; writeLocal(store); return next.length!==list.length;
 }
-
-// ---------------- CATEGORIES ----------------
-export async function getCategories(): Promise<CategoryItem[]> {
-  const store = ensureLocalStore();
-  return Array.isArray(store.categories) ? store.categories : [];
+async function list(table:Table, order='created_at', ascending=true) {
+  const result=await client().from(table).select('*').order(order,{ascending});
+  check(result.error,'Tải '+table); return result.data || [];
 }
-
-export async function saveCategory(category: CategoryItem): Promise<CategoryItem> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.categories)) store.categories = [];
-
-  const cleanId = String(category.id).trim().toLowerCase();
-  const cleanSlug = String(category.slug).trim().toLowerCase();
-
-  const index = store.categories.findIndex((c) => {
-    const cId = c.id ? String(c.id).trim().toLowerCase() : '';
-    const cSlug = c.slug ? String(c.slug).trim().toLowerCase() : '';
-    return cId === cleanId || cSlug === cleanSlug;
-  });
-
-  if (index >= 0) {
-    store.categories[index] = category;
-  } else {
-    store.categories.push(category);
-  }
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('categories').upsert({
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        subtitle: category.subtitle,
-        image: category.image,
-      });
-    } catch (e) {
-      console.error('Supabase category upsert failed:', e);
-    }
-  }
-
-  return category;
+async function put(table:Table, row:Record<string,unknown>) {
+  const result=await client().from(table).upsert(row).select('id').single();
+  check(result.error,'Lưu '+table);
+  if (!result.data?.id) throw new Error('Supabase chưa xác nhận lưu '+table);
 }
-
-export async function deleteCategory(idOrSlug: string): Promise<boolean> {
-  const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.categories)) return false;
-
-  store.categories = store.categories.filter((c) => {
-    const cId = c.id ? String(c.id).trim().toLowerCase() : '';
-    const cSlug = c.slug ? String(c.slug).trim().toLowerCase() : '';
-    return cId !== cleanTarget && cSlug !== cleanTarget;
-  });
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('categories').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
-    } catch (e) {
-      console.error('Supabase category delete failed:', e);
-    }
-  }
-
+async function remove(table:Table, value:string, alias?:string):Promise<boolean> {
+  let found=await client().from(table).select('id').eq('id',value).maybeSingle();
+  check(found.error,'Tìm '+table);
+  if (!found.data && alias) { found=await client().from(table).select('id').eq(alias,value).maybeSingle(); check(found.error,'Tìm '+table); }
+  if (!found.data) return false;
+  const result=await client().from(table).delete().eq('id',found.data.id).select('id');
+  check(result.error,'Xóa '+table);
+  if (result.data?.length!==1) throw new Error('Supabase chưa xác nhận xóa '+table);
   return true;
 }
 
-// ---------------- PRODUCTS ----------------
-export async function getProducts(): Promise<Product[]> {
-  if (isSupabaseConfigured && supabase) {
-    try {
-      const { data, error } = await supabase.from('products').select('*');
-      if (!error && data) {
-        return data.map((item) => ({
-          ...item,
-          categoryName: item.category_name,
-          extractionMethod: item.extraction_method,
-          isFeatured: item.is_featured,
-          isNew: item.is_new,
-          reviewCount: item.review_count,
-        }));
-      }
-    } catch (e) {
-      console.warn('Supabase fetch failed, falling back to local store:', e);
-    }
-  }
+export async function getCategories():Promise<CategoryItem[]> { return (localMode ? readLocal().categories : await list('categories') as CategoryItem[]).map(cleanCategory); }
+export async function saveCategory(item:CategoryItem):Promise<CategoryItem> {
+  if(localMode) localSave('categories',item);
+  else await put('categories',{id:item.id,name:item.name,slug:item.slug,subtitle:item.subtitle,image:item.image});
+  return item;
+}
+export async function deleteCategory(value:string):Promise<boolean> { return localMode ? localDelete('categories',value,'slug') : remove('categories',value,'slug'); }
 
-  const store = ensureLocalStore();
-  return Array.isArray(store.products) ? store.products : [];
+function product(x:any):Product { return cleanProduct({...x,categoryName:x.category_name,extractionMethod:x.extraction_method,isFeatured:x.is_featured,isNew:x.is_new,reviewCount:x.review_count}); }
+export async function getProducts():Promise<Product[]> { return localMode ? readLocal().products.map(cleanProduct) : (await list('products')).map(product); }
+export async function getProductBySlug(slug:string):Promise<Product|null> { return (await getProducts()).find(x=>x.slug===slug||x.id===slug)||null; }
+export async function saveProduct(p:Product):Promise<Product> {
+  if(localMode) localSave('products',p);
+  else await put('products',{id:p.id,name:p.name,slug:p.slug,category:p.category,category_name:p.categoryName,subtitle:p.subtitle,description:p.description,story:p.story,origin:p.origin,extraction_method:p.extractionMethod,image:p.image,gallery:p.gallery,variants:p.variants,notes:p.notes,benefits:p.benefits,ritual_guide:p.ritualGuide,is_featured:p.isFeatured??false,is_new:p.isNew??false,rating:p.rating,review_count:p.reviewCount});
+  return p;
+}
+export async function deleteProduct(value:string):Promise<boolean> { return localMode ? localDelete('products',value,'slug') : remove('products',value,'slug'); }
+
+function order(x:any):Order { return {id:x.id,orderCode:x.order_code,createdAt:x.created_at,customerName:x.customer_name,customerPhone:x.customer_phone,customerEmail:x.customer_email,shippingAddress:x.shipping_address,note:x.note,items:x.items,subtotal:Number(x.subtotal),shippingFee:Number(x.shipping_fee),total:Number(x.total),status:x.status,paymentMethod:x.payment_method}; }
+export async function getOrders():Promise<Order[]> { return localMode ? readLocal().orders.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)) : (await list('orders','created_at',false)).map(order); }
+export async function getOrderByCode(code:string):Promise<Order|null> {
+  if(localMode) return readLocal().orders.find(x=>x.orderCode===code||x.id===code)||null;
+  const r=await client().from('orders').select('*').eq('order_code',code).maybeSingle(); check(r.error,'Tải đơn hàng'); return r.data?order(r.data):null;
+}
+export async function createOrder(o:Order):Promise<Order> {
+  if(localMode) localSave('orders',o,true);
+  else await put('orders',{id:o.id,order_code:o.orderCode,created_at:o.createdAt,customer_name:o.customerName,customer_phone:o.customerPhone,customer_email:o.customerEmail,shipping_address:o.shippingAddress,note:o.note,items:o.items,subtotal:o.subtotal,shipping_fee:o.shippingFee,total:o.total,status:o.status,payment_method:o.paymentMethod});
+  return o;
+}
+export async function updateOrderStatus(code:string,status:Order['status']):Promise<boolean> {
+  if(localMode) {const s=readLocal();const o=s.orders.find(x=>x.orderCode===code);if(!o)return false;o.status=status;writeLocal(s);return true;}
+  const r=await client().from('orders').update({status}).eq('order_code',code).select('id');check(r.error,'Cập nhật đơn hàng');return r.data?.length===1;
+}
+export async function deleteOrder(value:string):Promise<boolean> { return localMode ? localDelete('orders',value,'orderCode') : remove('orders',value,'order_code'); }
+
+function lead(x:any):Lead {return {id:x.id,name:x.name,phone:x.phone,email:x.email,interest:x.interest,message:x.message,status:x.status,createdAt:x.created_at};}
+export async function getLeads():Promise<Lead[]> { return localMode ? readLocal().leads.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)) : (await list('leads','created_at',false)).map(lead); }
+export async function createLead(l:Lead):Promise<Lead> {
+  if(localMode) localSave('leads',l,true);
+  else await put('leads',{id:l.id,name:l.name,phone:l.phone,email:l.email,interest:l.interest,message:l.message,status:l.status,created_at:l.createdAt});
+  return l;
+}
+export async function updateLeadStatus(id:string,status:Lead['status']):Promise<boolean> {
+  if(localMode) {const s=readLocal();const l=s.leads.find(x=>x.id===id);if(!l)return false;l.status=status;writeLocal(s);return true;}
+  const r=await client().from('leads').update({status}).eq('id',id).select('id');check(r.error,'Cập nhật khách hàng');return r.data?.length===1;
+}
+export async function deleteLead(value:string):Promise<boolean> {return localMode ? localDelete('leads',value) : remove('leads',value);}
+
+export async function getSiteConfig():Promise<SiteConfig> {
+  if(localMode) return {...initialSiteConfig,...readLocal().config};
+  const r=await client().from('site_config').select('data').eq('id','main').maybeSingle();check(r.error,'Tải cấu hình');
+  return r.data?.data ? {...initialSiteConfig,...r.data.data} : initialSiteConfig;
+}
+export async function saveSiteConfig(c:SiteConfig):Promise<SiteConfig> {
+  if(localMode){const s=readLocal();s.config=c;writeLocal(s);}
+  else await put('site_config',{id:'main',data:c,updated_at:new Date().toISOString()});
+  return c;
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const products = await getProducts();
-  const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
-  return (
-    products.find((p) => {
-      const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
-      const pId = p.id ? String(p.id).trim().toLowerCase() : '';
-      return pSlug === cleanSlug || pId === cleanSlug;
-    }) || null
-  );
+function article(x:any):Article {return {id:x.id,title:x.title,slug:x.slug,excerpt:x.excerpt,content:x.content,coverImage:x.cover_image,category:x.category,publishedAt:x.published_at,readTime:x.read_time,author:x.author};}
+export async function getArticles():Promise<Article[]> {return localMode?readLocal().articles:(await list('articles','published_at',false)).map(article);}
+export async function getArticleBySlug(slug:string):Promise<Article|null> {return (await getArticles()).find(x=>x.slug===slug||x.id===slug)||null;}
+export async function saveArticle(a:Article):Promise<Article> {
+  if(localMode) localSave('articles',a,true);
+  else await put('articles',{id:a.id,title:a.title,slug:a.slug,excerpt:a.excerpt,content:a.content,cover_image:a.coverImage,category:a.category,published_at:a.publishedAt,read_time:a.readTime,author:a.author});
+  return a;
 }
-
-export async function saveProduct(product: Product): Promise<Product> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.products)) store.products = [];
-
-  const cleanId = String(product.id).trim().toLowerCase();
-  const cleanSlug = String(product.slug).trim().toLowerCase();
-
-  const index = store.products.findIndex((p) => {
-    const pId = p.id ? String(p.id).trim().toLowerCase() : '';
-    const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
-    return pId === cleanId || pSlug === cleanSlug;
-  });
-
-  if (index >= 0) {
-    store.products[index] = product;
-  } else {
-    store.products.push(product);
-  }
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('products').upsert({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        category: product.category,
-        category_name: product.categoryName,
-        subtitle: product.subtitle,
-        description: product.description,
-        story: product.story,
-        origin: product.origin,
-        extraction_method: product.extractionMethod,
-        image: product.image,
-        gallery: product.gallery,
-        variants: product.variants,
-        notes: product.notes,
-        benefits: product.benefits,
-        ritual_guide: product.ritualGuide,
-        is_featured: product.isFeatured,
-        is_new: product.isNew,
-        rating: product.rating,
-        review_count: product.reviewCount,
-      });
-    } catch (e) {
-      console.error('Supabase product upsert failed:', e);
-    }
-  }
-
-  return product;
-}
-
-export async function deleteProduct(productIdOrSlug: string): Promise<boolean> {
-  const cleanTarget = decodeURIComponent(productIdOrSlug).trim().toLowerCase();
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.products)) return false;
-
-  store.products = store.products.filter((p) => {
-    const pId = p.id ? String(p.id).trim().toLowerCase() : '';
-    const pSlug = p.slug ? String(p.slug).trim().toLowerCase() : '';
-    return pId !== cleanTarget && pSlug !== cleanTarget;
-  });
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase
-        .from('products')
-        .delete()
-        .or(`id.eq.${productIdOrSlug},slug.eq.${productIdOrSlug}`);
-    } catch (e) {
-      console.error('Supabase product delete failed:', e);
-    }
-  }
-
-  return true;
-}
-
-// ---------------- ORDERS ----------------
-export async function getOrders(): Promise<Order[]> {
-  if (isSupabaseConfigured && supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        return data.map((o) => ({
-          id: o.id,
-          orderCode: o.order_code,
-          createdAt: o.created_at,
-          customerName: o.customer_name,
-          customerPhone: o.customer_phone,
-          customerEmail: o.customer_email,
-          shippingAddress: o.shipping_address,
-          note: o.note,
-          items: o.items,
-          subtotal: Number(o.subtotal),
-          shippingFee: Number(o.shipping_fee),
-          total: Number(o.total),
-          status: o.status,
-          paymentMethod: o.payment_method,
-        }));
-      }
-    } catch (e) {
-      console.warn('Supabase orders fetch failed:', e);
-    }
-  }
-
-  const store = ensureLocalStore();
-  const orders = Array.isArray(store.orders) ? store.orders : [];
-  return orders.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export async function getOrderByCode(code: string): Promise<Order | null> {
-  const orders = await getOrders();
-  const clean = decodeURIComponent(code).trim().toLowerCase();
-  return (
-    orders.find((o) => {
-      const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
-      const oId = o.id ? String(o.id).trim().toLowerCase() : '';
-      return oCode === clean || oId === clean;
-    }) || null
-  );
-}
-
-export async function createOrder(order: Order): Promise<Order> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.orders)) store.orders = [];
-  store.orders.unshift(order);
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('orders').insert({
-        id: order.id,
-        order_code: order.orderCode,
-        customer_name: order.customerName,
-        customer_phone: order.customerPhone,
-        customer_email: order.customerEmail,
-        shipping_address: order.shippingAddress,
-        note: order.note,
-        items: order.items,
-        subtotal: order.subtotal,
-        shipping_fee: order.shippingFee,
-        total: order.total,
-        status: order.status,
-        payment_method: order.paymentMethod,
-        created_at: order.createdAt,
-      });
-    } catch (e) {
-      console.error('Supabase order insert failed:', e);
-    }
-  }
-
-  return order;
-}
-
-export async function updateOrderStatus(orderCode: string, status: Order['status']): Promise<boolean> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.orders)) return false;
-  const cleanCode = decodeURIComponent(orderCode).trim().toLowerCase();
-
-  const order = store.orders.find((o) => {
-    const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
-    const oId = o.id ? String(o.id).trim().toLowerCase() : '';
-    return oCode === cleanCode || oId === cleanCode;
-  });
-
-  if (order) {
-    order.status = status;
-    commitLocalStore(store);
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase
-          .from('orders')
-          .update({ status })
-          .eq('order_code', orderCode);
-      } catch (e) {
-        console.error('Supabase order status update failed:', e);
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
-export async function deleteOrder(idOrCode: string): Promise<boolean> {
-  const cleanTarget = decodeURIComponent(idOrCode).trim().toLowerCase();
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.orders)) return false;
-
-  store.orders = store.orders.filter((o) => {
-    const oId = o.id ? String(o.id).trim().toLowerCase() : '';
-    const oCode = o.orderCode ? String(o.orderCode).trim().toLowerCase() : '';
-    return oId !== cleanTarget && oCode !== cleanTarget;
-  });
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('orders').delete().or(`id.eq.${idOrCode},order_code.eq.${idOrCode}`);
-    } catch (e) {
-      console.error('Supabase order delete failed:', e);
-    }
-  }
-
-  return true;
-}
-
-// ---------------- LEADS / CUSTOMER DATA ----------------
-export async function getLeads(): Promise<Lead[]> {
-  const store = ensureLocalStore();
-  const leads = Array.isArray(store.leads) ? store.leads : [];
-  return leads.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export async function createLead(lead: Lead): Promise<Lead> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.leads)) store.leads = [];
-  store.leads.unshift(lead);
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('leads').insert({
-        id: lead.id,
-        name: lead.name,
-        phone: lead.phone,
-        email: lead.email,
-        interest: lead.interest,
-        message: lead.message,
-        status: lead.status,
-        created_at: lead.createdAt,
-      });
-    } catch (e) {
-      console.error('Supabase lead insert failed:', e);
-    }
-  }
-
-  return lead;
-}
-
-export async function updateLeadStatus(id: string, status: Lead['status']): Promise<boolean> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.leads)) return false;
-  const cleanId = decodeURIComponent(id).trim().toLowerCase();
-
-  const lead = store.leads.find((l) => {
-    const lId = l.id ? String(l.id).trim().toLowerCase() : '';
-    return lId === cleanId;
-  });
-
-  if (lead) {
-    lead.status = status;
-    commitLocalStore(store);
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from('leads').update({ status }).eq('id', id);
-      } catch (e) {
-        console.error('Supabase lead update failed:', e);
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
-export async function deleteLead(id: string): Promise<boolean> {
-  const cleanTarget = decodeURIComponent(id).trim().toLowerCase();
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.leads)) return false;
-
-  store.leads = store.leads.filter((l) => {
-    const lId = l.id ? String(l.id).trim().toLowerCase() : '';
-    return lId !== cleanTarget;
-  });
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('leads').delete().eq('id', id);
-    } catch (e) {
-      console.error('Supabase lead delete failed:', e);
-    }
-  }
-
-  return true;
-}
-
-// ---------------- SITE CONFIG ----------------
-export async function getSiteConfig(): Promise<SiteConfig> {
-  if (isSupabaseConfigured && supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('site_config')
-        .select('data')
-        .eq('id', 'main')
-        .single();
-      if (!error && data?.data) {
-        return data.data;
-      }
-    } catch (e) {
-      console.warn('Supabase site_config fetch failed:', e);
-    }
-  }
-
-  const store = ensureLocalStore();
-  return store.config || initialSiteConfig;
-}
-
-export async function saveSiteConfig(config: SiteConfig): Promise<SiteConfig> {
-  const store = ensureLocalStore();
-  store.config = config;
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('site_config').upsert({
-        id: 'main',
-        data: config,
-        updated_at: new Date().toISOString(),
-      });
-    } catch (e) {
-      console.error('Supabase site_config save failed:', e);
-    }
-  }
-
-  return config;
-}
-
-// ---------------- ARTICLES ----------------
-export async function getArticles(): Promise<Article[]> {
-  const store = ensureLocalStore();
-  return Array.isArray(store.articles) ? store.articles : [];
-}
-
-export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const articles = await getArticles();
-  const clean = decodeURIComponent(slug).trim().toLowerCase();
-  return (
-    articles.find((a) => {
-      const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
-      const aId = a.id ? String(a.id).trim().toLowerCase() : '';
-      return aSlug === clean || aId === clean;
-    }) || null
-  );
-}
-
-export async function saveArticle(article: Article): Promise<Article> {
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.articles)) store.articles = [];
-
-  const cleanId = String(article.id).trim().toLowerCase();
-  const cleanSlug = String(article.slug).trim().toLowerCase();
-
-  const index = store.articles.findIndex((a) => {
-    const aId = a.id ? String(a.id).trim().toLowerCase() : '';
-    const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
-    return aId === cleanId || aSlug === cleanSlug;
-  });
-
-  if (index >= 0) {
-    store.articles[index] = article;
-  } else {
-    store.articles.unshift(article);
-  }
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('articles').upsert({
-        id: article.id,
-        title: article.title,
-        slug: article.slug,
-        excerpt: article.excerpt,
-        content: article.content,
-        cover_image: article.coverImage,
-        category: article.category,
-        published_at: article.publishedAt,
-        read_time: article.readTime,
-        author: article.author,
-      });
-    } catch (e) {
-      console.error('Supabase article upsert failed:', e);
-    }
-  }
-
-  return article;
-}
-
-export async function deleteArticle(idOrSlug: string): Promise<boolean> {
-  const cleanTarget = decodeURIComponent(idOrSlug).trim().toLowerCase();
-  const store = ensureLocalStore();
-  if (!Array.isArray(store.articles)) return false;
-
-  store.articles = store.articles.filter((a) => {
-    const aId = a.id ? String(a.id).trim().toLowerCase() : '';
-    const aSlug = a.slug ? String(a.slug).trim().toLowerCase() : '';
-    return aId !== cleanTarget && aSlug !== cleanTarget;
-  });
-  commitLocalStore(store);
-
-  if (isSupabaseConfigured && supabase) {
-    try {
-      await supabase.from('articles').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
-    } catch (e) {
-      console.error('Supabase article delete failed:', e);
-    }
-  }
-
-  return true;
-}
+export async function deleteArticle(value:string):Promise<boolean> {return localMode?localDelete('articles',value,'slug'):remove('articles',value,'slug');}

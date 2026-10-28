@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getProducts, createOrder, getOrders, updateOrderStatus, deleteOrder } from '@/lib/storage';
+import { getProducts, createOrder, getOrders, getSiteConfig, updateOrderStatus, deleteOrder } from '@/lib/storage';
 import { generateOrderCode } from '@/lib/utils';
 import { Order, OrderItem } from '@/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -14,13 +15,11 @@ const NO_CACHE_HEADERS = {
   'Surrogate-Control': 'no-store',
 };
 
-const FREE_SHIPPING_THRESHOLD = 499000;
-const STANDARD_SHIPPING_FEE = 30000;
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
+    if (!code) { const denied = requireAdmin(); if (denied) return denied; }
 
     const orders = await getOrders();
     if (code) {
@@ -97,7 +96,8 @@ export async function POST(request: Request) {
       calculatedSubtotal += verifiedPrice * quantity;
     }
 
-    const shippingFee = calculatedSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+    const config = await getSiteConfig();
+    const shippingFee = calculatedSubtotal >= config.freeShippingThreshold ? 0 : config.standardShippingFee;
     const total = calculatedSubtotal + shippingFee;
     const orderCode = generateOrderCode();
 
@@ -137,6 +137,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body = await request.json();
     const { orderCode, status } = body;
@@ -158,6 +159,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     let code = searchParams.get('code') || searchParams.get('id');
@@ -176,6 +178,7 @@ export async function DELETE(request: Request) {
     }
 
     const success = await deleteOrder(code);
+    if (!success) return NextResponse.json({ error: 'Không tìm thấy đơn hàng để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
     return NextResponse.json(
       { success, message: 'Đã xóa đơn hàng thành công' },
       { headers: NO_CACHE_HEADERS }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSiteConfig, saveSiteConfig } from '@/lib/storage';
 import { SiteConfig } from '@/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,6 +25,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const denied = requireAdmin(); if (denied) return denied;
   try {
     const body: SiteConfig = await request.json();
 
@@ -57,6 +59,6 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error in POST /api/config:', error);
-    return NextResponse.json({ error: 'Lỗi lưu cấu hình' }, { status: 500, headers: NO_CACHE_HEADERS });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Lỗi lưu cấu hình' }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }

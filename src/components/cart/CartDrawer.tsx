@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { formatVND } from '@/lib/utils';
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 
-const FREE_SHIPPING_THRESHOLD = 499000;
-
 export default function CartDrawer() {
   const { items, isOpen, closeCart, updateQuantity, removeFromCart, subtotal, totalItems } = useCart();
+  const [freeShippingThreshold,setFreeShippingThreshold]=useState(499000);
+  useEffect(()=>{fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>setFreeShippingThreshold(Number(c.freeShippingThreshold)||499000)).catch(()=>{});},[]);
 
   // Đóng giỏ hàng bằng phím Escape
   useEffect(() => {
@@ -25,8 +25,8 @@ export default function CartDrawer() {
 
   if (!isOpen) return null;
 
-  const diffForFreeShip = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const freeShipProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const diffForFreeShip = Math.max(0, freeShippingThreshold - subtotal);
+  const freeShipProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">

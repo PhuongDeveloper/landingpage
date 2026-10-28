@@ -54,6 +54,22 @@ export const initialSiteConfig: SiteConfig = {
   seoTitle: 'Nam Mộc Hương — Lan tỏa hương thơm Thuần khiết từ thiên nhiên',
   seoDescription: 'Nam Mộc Hương – tinh dầu thiên nhiên nguyên chất, tinh hoa từ thảo mộc thiên nhiên. Cho một cuộc sống an yên và cân bằng.',
   seoKeywords: 'nam mộc hương, tinh dầu thiên nhiên, tinh dầu nguyên chất, xông phòng thư giãn',
+  homeCategoryLabel: 'Chọn theo cảm xúc',
+  homeCategoryTitle: 'Một mùi hương cho mỗi khoảnh khắc.',
+  homeProductLabel: 'Bộ sưu tập',
+  homeProductTitle: 'Những hương thơm được yêu thích',
+  homeProductLinkText: 'Xem tất cả sản phẩm',
+  homeStoryLabel: 'Nam Mộc Hương',
+  homeStoryTitle: 'Từ thiên nhiên, cho không gian của bạn.',
+  homeStoryBody: 'Chúng tôi chọn nguyên liệu và mùi hương với sự chú tâm đến từng chi tiết, để mỗi lần mở nắp là một khoảng lặng dễ chịu.',
+  homeStoryImage: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1200&q=85',
+  homeStoryLinkText: 'Khám phá bộ sưu tập',
+  homeJournalLabel: 'Góc mùi hương',
+  homeJournalTitle: 'Đọc thêm về tinh dầu',
+  footerDescription: 'Mùi hương tự nhiên cho những khoảng lặng trong ngày.',
+  navProducts: 'Sản phẩm',
+  navStory: 'Câu chuyện',
+  navJournal: 'Tạp chí',
 };
 
 export const initialProducts: Product[] = [
