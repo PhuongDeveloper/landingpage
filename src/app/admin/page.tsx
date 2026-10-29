@@ -73,8 +73,8 @@ export default function AdminPage() {
   const [prodRitual, setProdRitual] = useState('');
   const [prodFeatured, setProdFeatured] = useState(false);
   const [prodNew, setProdNew] = useState(false);
-  const [prodOrigin, setProdOrigin] = useState('Đà Lạt, Lâm Đồng');
-  const [prodExtraction, setProdExtraction] = useState('Chưng cất lôi cuốn hơi nước');
+  const [prodOrigin, setProdOrigin] = useState('');
+  const [prodExtraction, setProdExtraction] = useState('');
   const [prodImage, setProdImage] = useState('');
   const [prodTopNote, setProdTopNote] = useState('');
   const [prodMidNote, setProdMidNote] = useState('');
@@ -84,7 +84,7 @@ export default function AdminPage() {
   const [variantsList, setVariantsList] = useState<
     Array<{ capacity: string; price: string; salePrice: string; stock: string }>
   >([
-    { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+    { capacity: '10ml', price: '', salePrice: '', stock: '0' },
   ]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -329,7 +329,7 @@ export default function AdminPage() {
 
     setVariantsList((prev) => [
       ...prev,
-      { capacity: nextCap, price: '', salePrice: '', stock: '50' },
+      { capacity: nextCap, price: '', salePrice: '', stock: '0' },
     ]);
   };
 
@@ -367,8 +367,8 @@ export default function AdminPage() {
     setProdRitual((p.ritualGuide || []).join('\n'));
     setProdFeatured(Boolean(p.isFeatured));
     setProdNew(Boolean(p.isNew));
-    setProdOrigin(p.origin || 'Đà Lạt, Lâm Đồng');
-    setProdExtraction(p.extractionMethod || 'Chưng cất lôi cuốn hơi nước');
+    setProdOrigin(p.origin || '');
+    setProdExtraction(p.extractionMethod || '');
     setProdImage(p.image);
     setProdTopNote(p.notes?.top || '');
     setProdMidNote(p.notes?.middle || '');
@@ -385,7 +385,7 @@ export default function AdminPage() {
       );
     } else {
       setVariantsList([
-        { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+        { capacity: '10ml', price: '', salePrice: '', stock: '0' },
       ]);
     }
     setShowProductModal(true);
@@ -396,7 +396,7 @@ export default function AdminPage() {
     setEditingProductId(null);
     setProdName('');
     setProdSlug('');
-    setProdCategory(categories[0]?.slug || 'thu-gian');
+    setProdCategory(categories[0]?.slug || '');
     setProdSubtitle('');
     setProdDescription('');
     setProdStory('');
@@ -405,14 +405,14 @@ export default function AdminPage() {
     setProdRitual('');
     setProdFeatured(false);
     setProdNew(false);
-    setProdOrigin('Đà Lạt, Lâm Đồng');
-    setProdExtraction('Chưng cất lôi cuốn hơi nước');
+    setProdOrigin('');
+    setProdExtraction('');
     setProdImage('');
     setProdTopNote('');
     setProdMidNote('');
     setProdBaseNote('');
     setVariantsList([
-      { capacity: '10ml', price: '180000', salePrice: '160000', stock: '50' },
+      { capacity: '10ml', price: '', salePrice: '', stock: '0' },
     ]);
     setShowProductModal(true);
   };
@@ -437,6 +437,7 @@ export default function AdminPage() {
 
     const slug = slugify(prodSlug.trim() || prodName);
     const catItem = categories.find((c) => c.slug === prodCategory);
+    if (!catItem) { showToast('Vui lòng chọn danh mục đã tồn tại'); return; }
 
     const mappedVariants = variantsList.map((v) => ({
       capacity: v.capacity.trim(),
@@ -450,8 +451,8 @@ export default function AdminPage() {
       id: editingProductId || `nmh-${Date.now()}`,
       name: prodName.trim(),
       slug,
-      category: prodCategory || 'thu-gian',
-      categoryName: catItem?.name || 'Tinh dầu Thư giãn',
+      category: catItem.slug,
+      categoryName: catItem.name,
       subtitle: prodSubtitle.trim(),
       description: prodDescription.trim(),
       story: prodStory.trim(),
@@ -526,8 +527,8 @@ export default function AdminPage() {
       id: editingCatId || `cat-${Date.now()}`,
       name: catName.trim(),
       slug,
-      subtitle: catSubtitle.trim() || 'Bộ sưu tập tinh dầu thảo mộc',
-      image: catImage.trim() || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80',
+      subtitle: catSubtitle.trim(),
+      image: catImage.trim(),
     };
 
     try {
@@ -588,7 +589,7 @@ export default function AdminPage() {
       slug,
       excerpt: articleExcerpt.trim(),
       content: articleContent.trim(),
-      coverImage: articleCover.trim() || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80',
+      coverImage: articleCover.trim(),
       category: articleCategory.trim(),
       publishedAt: articlePublishedAt || new Date().toISOString().split('T')[0],
       readTime: articleReadTime.trim(),

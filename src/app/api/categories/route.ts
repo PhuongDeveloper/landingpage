@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCategories, saveCategory, deleteCategory } from '@/lib/storage';
+import { getCategories, getProducts, saveCategory, deleteCategory } from '@/lib/storage';
 import { CategoryItem } from '@/types';
 import { requireAdmin } from '@/lib/admin-auth';
 
@@ -65,7 +65,12 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Thiếu ID danh mục' }, { status: 400, headers: NO_CACHE_HEADERS });
     }
 
-    const success = await deleteCategory(id);
+    const categories = await getCategories();
+    const target = categories.find((c) => c.id === id || c.slug === id);
+    if (!target) return NextResponse.json({ error: 'Không tìm thấy danh mục để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
+    const products = await getProducts();
+    if (products.some((p) => p.category === target.slug)) return NextResponse.json({ error: 'Danh mục đang có sản phẩm. Hãy chuyển hoặc xóa các sản phẩm trước.' }, { status: 409, headers: NO_CACHE_HEADERS });
+    const success = await deleteCategory(target.id);
     if (!success) return NextResponse.json({ error: 'Không tìm thấy danh mục để xóa' }, { status: 404, headers: NO_CACHE_HEADERS });
     return NextResponse.json(
       { success, message: 'Đã xóa danh mục thành công' },
