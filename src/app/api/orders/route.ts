@@ -115,7 +115,7 @@ export async function POST(request: Request) {
       shippingFee,
       total,
       status: 'pending',
-      paymentMethod: paymentMethod === 'bank_transfer' ? 'bank_transfer' : 'cod',
+      paymentMethod: 'cod',
     };
 
     const savedOrder = await createOrder(newOrder);

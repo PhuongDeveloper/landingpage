@@ -253,33 +253,6 @@ export default function CheckoutPage() {
                   </div>
                 </label>
 
-                <label
-                  className={`p-4 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
-                    paymentMethod === 'bank_transfer'
-                      ? 'border-botanical bg-botanical/5 shadow-xs'
-                      : 'border-clay hover:border-botanical/40 bg-white'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bank_transfer"
-                    checked={paymentMethod === 'bank_transfer'}
-                    onChange={() => setPaymentMethod('bank_transfer')}
-                    className="mt-1 accent-botanical"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-botanical" />
-                      <span className="font-semibold text-xs text-charcoal">
-                        Chuyển khoản ngân hàng (VietQR)
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-charcoal/70 mt-1">
-                      Quét mã QR qua ứng dụng ngân hàng sau khi đặt thành công để được xử lý nhanh hơn.
-                    </p>
-                  </div>
-                </label>
               </div>
             </div>
           </div>

@@ -100,35 +100,8 @@ export default async function OrderDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Bank Transfer QR Box (nếu chọn chuyển khoản) */}
           {order.paymentMethod === 'bank_transfer' && order.status === 'pending' && (
-            <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs space-y-3">
-              <div className="flex items-center gap-2 font-bold text-amber-900 text-sm">
-                <QrCode className="w-5 h-5 text-amber-700" />
-                <span>Thông Tin Thanh Toán Chuyển Khoản (VietQR)</span>
-              </div>
-              <p className="text-amber-800">
-                Vui lòng chuyển khoản theo thông tin dưới đây để đơn hàng được ưu tiên xử lý:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-4 rounded-xl border border-amber-200/80 font-mono text-charcoal">
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Ngân hàng</span>
-                  <strong>Vietcombank</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Số tài khoản</span>
-                  <strong>1028 999 888</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Chủ tài khoản</span>
-                  <strong>NAM MOC HUONG</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Số tiền & Nội dung</span>
-                  <strong className="text-botanical">{formatVND(order.total)}</strong> ({order.orderCode})
-                </div>
-              </div>
-            </div>
+            <p className="p-5 bg-amber-50 border border-amber-200 text-amber-900 text-sm">Thông tin chuyển khoản đang được cập nhật. Vui lòng liên hệ cửa hàng trước khi thanh toán.</p>
           )}
 
           {/* Delivery & Customer Info */}
