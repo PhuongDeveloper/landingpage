@@ -2286,6 +2286,17 @@ export default function AdminPage() {
               </div>
             </div>
 
+            <div className="space-y-4 pt-2">
+              <div className="pb-1 border-b border-clay/60"><h3 className="font-serif font-bold text-sm sm:text-base text-botanical">Tài khoản nhận chuyển khoản VietQR</h3></div>
+              <p className="text-charcoal/70">Mặc định là ACB. Chuyển khoản chỉ hiện ở trang thanh toán khi đã nhập đủ số tài khoản và tên chủ tài khoản.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="space-y-1"><span className="font-semibold">Ngân hàng</span><input value={config.bankName || ''} onChange={e=>setConfig({...config,bankName:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50" placeholder="ACB" /></label>
+                <label className="space-y-1"><span className="font-semibold">Mã BIN ngân hàng</span><input inputMode="numeric" maxLength={6} value={config.bankBin || ''} onChange={e=>setConfig({...config,bankBin:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50" placeholder="970416" /></label>
+                <label className="space-y-1"><span className="font-semibold">Số tài khoản</span><input value={config.bankAccountNo || ''} onChange={e=>setConfig({...config,bankAccountNo:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50" placeholder="Nhập số tài khoản thật" /></label>
+                <label className="space-y-1"><span className="font-semibold">Tên chủ tài khoản</span><input value={config.bankAccountName || ''} onChange={e=>setConfig({...config,bankAccountName:e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50" placeholder="Tên trên tài khoản ngân hàng" /></label>
+              </div>
+            </div>
+
             {/* KHU VỰC 4: CHÍNH SÁCH VẬN CHUYỂN & SEO */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-1 border-b border-clay/60">

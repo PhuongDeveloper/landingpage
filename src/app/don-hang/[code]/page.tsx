@@ -1,7 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { getOrderByCode } from '@/lib/storage';
+import { getOrderByCode, getSiteConfig } from '@/lib/storage';
+import { vietQrTransfer } from '@/lib/vietqr';
 import { formatVND, formatDateVietnamese } from '@/lib/utils';
 import { CheckCircle2, Clock, Truck, PackageCheck, AlertCircle, Phone, ArrowLeft, QrCode } from 'lucide-react';
 
@@ -15,7 +17,7 @@ interface Props {
 }
 
 export default async function OrderDetailPage({ params }: Props) {
-  const order = await getOrderByCode(params.code);
+  const [order, config] = await Promise.all([getOrderByCode(params.code),getSiteConfig()]);
 
   if (!order) {
     notFound();
@@ -64,6 +66,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
   const statusInfo = getStatusBadge(order.status);
   const StatusIcon = statusInfo.icon;
+  const transfer = order.paymentMethod === 'bank_transfer' ? vietQrTransfer(order,config) : null;
 
   return (
     <div className="py-12 lg:py-20 bg-ivory min-h-screen">
@@ -103,35 +106,22 @@ export default async function OrderDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Bank Transfer QR Box (nếu chọn chuyển khoản) */}
           {order.paymentMethod === 'bank_transfer' && order.status === 'pending' && (
-            <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs space-y-3">
-              <div className="flex items-center gap-2 font-bold text-amber-900 text-sm">
-                <QrCode className="w-5 h-5 text-amber-700" />
-                <span>Thông Tin Thanh Toán Chuyển Khoản (VietQR)</span>
+            transfer ? <div className="p-5 bg-ivory border border-clay text-sm space-y-4">
+              <h2 className="font-serif text-2xl text-botanical">Chuyển khoản VietQR</h2>
+              <div className="flex flex-col sm:flex-row items-start gap-5">
+                <div className="relative w-[240px] h-[284px] shrink-0"><Image src={transfer.imageUrl} alt="Mã VietQR cho đơn hàng" fill unoptimized sizes="240px" className="object-contain" /></div>
+                <dl className="space-y-3 text-xs break-words">
+                  <div><dt className="text-charcoal/60">Ngân hàng</dt><dd className="font-semibold">{config.bankName}</dd></div>
+                  <div><dt className="text-charcoal/60">Số tài khoản</dt><dd className="font-semibold">{config.bankAccountNo}</dd></div>
+                  <div><dt className="text-charcoal/60">Chủ tài khoản</dt><dd className="font-semibold">{config.bankAccountName}</dd></div>
+                  <div><dt className="text-charcoal/60">Số tiền</dt><dd className="font-semibold">{formatVND(order.total)}</dd></div>
+                  <div><dt className="text-charcoal/60">Nội dung trong QR</dt><dd className="font-semibold">{transfer.transferNote}</dd></div>
+                  <div><dt className="text-charcoal/60">Thông tin đối chiếu đầy đủ</dt><dd>{transfer.fullReference}</dd></div>
+                </dl>
               </div>
-              <p className="text-amber-800">
-                Vui lòng chuyển khoản theo thông tin dưới đây để đơn hàng được ưu tiên xử lý:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-4 rounded-xl border border-amber-200/80 font-mono text-charcoal">
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Ngân hàng</span>
-                  <strong>Vietcombank</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Số tài khoản</span>
-                  <strong>1028 999 888</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Chủ tài khoản</span>
-                  <strong>NAM MOC HUONG</strong>
-                </div>
-                <div>
-                  <span className="text-charcoal/50 block text-[10px]">Số tiền & Nội dung</span>
-                  <strong className="text-botanical">{formatVND(order.total)}</strong> ({order.orderCode})
-                </div>
-              </div>
-            </div>
+              <p className="text-xs text-charcoal/70">VietQR giới hạn 50 ký tự không dấu cho nội dung. Địa chỉ có thể được rút gọn trong QR; địa chỉ giao hàng đầy đủ vẫn nằm trong đơn hàng.</p>
+            </div> : <p className="p-4 border border-amber-300 bg-amber-50 text-amber-900 text-sm">Thông tin chuyển khoản chưa được cấu hình. Vui lòng liên hệ cửa hàng trước khi thanh toán.</p>
           )}
 
           {/* Delivery & Customer Info */}
@@ -191,7 +181,7 @@ export default async function OrderDetailPage({ params }: Props) {
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-clay/60 text-xs">
             <div className="flex items-center gap-1.5 text-charcoal/70">
               <Phone className="w-4 h-4 text-botanical" />
-              <span>Hỗ trợ nhanh: <strong className="text-botanical">0988 123 456</strong></span>
+              {config.hotline && <span>Hỗ trợ nhanh: <strong className="text-botanical">{config.hotline}</strong></span>}
             </div>
 
             <Link

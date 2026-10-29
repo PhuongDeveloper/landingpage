@@ -6,16 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { formatVND } from '@/lib/utils';
-import {
-  ShieldCheck,
-  Truck,
-  CreditCard,
-  Banknote,
-  ArrowLeft,
-  Lock,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -30,9 +21,9 @@ export default function CheckoutPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [shipping, setShipping] = useState({threshold:499000,fee:30000});
+  const [shipping, setShipping] = useState({threshold:499000,fee:30000,hotline:'',bankReady:false});
   useEffect(()=>{
-    fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>setShipping({threshold:Number(c.freeShippingThreshold)||499000,fee:Number(c.standardShippingFee)||30000})).catch(()=>{});
+    fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>setShipping({threshold:Number(c.freeShippingThreshold)||499000,fee:Number(c.standardShippingFee)||30000,hotline:c.hotline||'',bankReady:Boolean(c.bankBin&&c.bankAccountNo&&c.bankAccountName)})).catch(()=>{});
   },[]);
 
   const shippingFee = subtotal >= shipping.threshold ? 0 : shipping.fee;
@@ -127,9 +118,6 @@ export default function CheckoutPage() {
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-botanical-dark mt-2">
             Thông Tin Đặt Hàng & Giao Nhận
           </h1>
-          <p className="text-xs text-charcoal/60 mt-1">
-            Đặt hàng nhanh không cần tạo tài khoản. Chúng tôi sẽ liên hệ xác nhận trước khi giao.
-          </p>
         </div>
 
         <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -158,7 +146,7 @@ export default function CheckoutPage() {
                     required
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Ví dụ: Nguyễn Văn An"
+                    placeholder="Họ và tên"
                     className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 text-xs focus:ring-2 focus:ring-botanical/20 focus:border-botanical focus:bg-white outline-none"
                   />
                 </div>
@@ -172,7 +160,7 @@ export default function CheckoutPage() {
                     required
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="Ví dụ: 0912345678"
+                    placeholder="Số điện thoại"
                     className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 text-xs focus:ring-2 focus:ring-botanical/20 focus:border-botanical focus:bg-white outline-none"
                   />
                 </div>
@@ -180,7 +168,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-charcoal">
-                  Email nhận hóa đơn & thông báo (tùy chọn)
+                  Email (tùy chọn)
                 </label>
                 <input
                   type="email"
@@ -207,13 +195,13 @@ export default function CheckoutPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-charcoal">
-                  Ghi chú giao hàng (thời gian nhận, lưu ý đóng gói)
+                  Ghi chú giao hàng
                 </label>
                 <textarea
                   rows={2}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Ví dụ: Giao giờ hành chính, gọi trước khi đến..."
+                  placeholder="Ghi chú nếu cần"
                   className="w-full px-4 py-2.5 rounded-xl border border-clay bg-ivory-50 text-xs focus:ring-2 focus:ring-botanical/20 focus:border-botanical focus:bg-white outline-none"
                 />
               </div>
@@ -225,62 +213,9 @@ export default function CheckoutPage() {
                 2. Hình Thức Thanh Toán
               </h2>
 
-              <div className="space-y-3">
-                <label
-                  className={`p-4 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
-                    paymentMethod === 'cod'
-                      ? 'border-botanical bg-botanical/5 shadow-xs'
-                      : 'border-clay hover:border-botanical/40 bg-white'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={paymentMethod === 'cod'}
-                    onChange={() => setPaymentMethod('cod')}
-                    className="mt-1 accent-botanical"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Banknote className="w-4 h-4 text-botanical" />
-                      <span className="font-semibold text-xs text-charcoal">
-                        Thanh toán khi nhận hàng (COD)
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-charcoal/70 mt-1">
-                      Kiểm tra hàng thoải mái trước khi thanh toán tiền mặt cho nhân viên bưu tá.
-                    </p>
-                  </div>
-                </label>
-
-                <label
-                  className={`p-4 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
-                    paymentMethod === 'bank_transfer'
-                      ? 'border-botanical bg-botanical/5 shadow-xs'
-                      : 'border-clay hover:border-botanical/40 bg-white'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bank_transfer"
-                    checked={paymentMethod === 'bank_transfer'}
-                    onChange={() => setPaymentMethod('bank_transfer')}
-                    className="mt-1 accent-botanical"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-botanical" />
-                      <span className="font-semibold text-xs text-charcoal">
-                        Chuyển khoản ngân hàng (VietQR)
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-charcoal/70 mt-1">
-                      Quét mã QR qua ứng dụng ngân hàng sau khi đặt thành công để được xử lý nhanh hơn.
-                    </p>
-                  </div>
-                </label>
+              <div className="space-y-2">
+                <label className={`flex items-center gap-3 p-4 border cursor-pointer ${paymentMethod==='cod'?'border-botanical bg-botanical/5':'border-clay'}`}><input type="radio" name="paymentMethod" checked={paymentMethod==='cod'} onChange={()=>setPaymentMethod('cod')} /> <span className="text-sm">Thanh toán khi nhận hàng (COD)</span></label>
+                {shipping.bankReady && <label className={`flex items-center gap-3 p-4 border cursor-pointer ${paymentMethod==='bank_transfer'?'border-botanical bg-botanical/5':'border-clay'}`}><input type="radio" name="paymentMethod" checked={paymentMethod==='bank_transfer'} onChange={()=>setPaymentMethod('bank_transfer')} /> <span className="text-sm">Chuyển khoản bằng VietQR</span></label>}
               </div>
             </div>
           </div>
@@ -347,19 +282,12 @@ export default function CheckoutPage() {
                   <span>Đang xử lý đơn hàng...</span>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4 text-gold-light" />
                     <span>Xác Nhận Đặt Hàng ({formatVND(total)})</span>
                   </>
                 )}
               </button>
 
-              <div className="text-[11px] text-charcoal/60 space-y-1.5 pt-2 text-center border-t border-clay/40">
-                <p className="flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-botanical" />
-                  Bảo mật thông tin khách hàng tuyệt đối
-                </p>
-                <p>Hotline hỗ trợ: <strong>0988 123 456</strong></p>
-              </div>
+              {shipping.hotline && <p className="text-[11px] text-charcoal/60 pt-2 text-center border-t border-clay/40">Hỗ trợ: <strong>{shipping.hotline}</strong></p>}
             </div>
           </div>
         </form>

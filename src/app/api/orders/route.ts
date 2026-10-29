@@ -97,6 +97,7 @@ export async function POST(request: Request) {
     }
 
     const config = await getSiteConfig();
+    if (paymentMethod === 'bank_transfer' && !(config.bankBin && config.bankAccountNo && config.bankAccountName)) return NextResponse.json({error:'Chuyển khoản chưa được cấu hình. Vui lòng chọn thanh toán khi nhận hàng.'},{status:400,headers:NO_CACHE_HEADERS});
     const shippingFee = calculatedSubtotal >= config.freeShippingThreshold ? 0 : config.standardShippingFee;
     const total = calculatedSubtotal + shippingFee;
     const orderCode = generateOrderCode();

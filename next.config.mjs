@@ -20,6 +20,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.ibb.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.vietqr.io',
+      },
     ],
   },
   async headers() {

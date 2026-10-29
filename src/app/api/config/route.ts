@@ -45,7 +45,17 @@ export async function POST(request: Request) {
       email: (body.email || '').replace(/<[^>]*>?/gm, ''),
       seoTitle: (body.seoTitle || '').replace(/<[^>]*>?/gm, ''),
       seoDescription: (body.seoDescription || '').replace(/<[^>]*>?/gm, ''),
+      bankName: (body.bankName || '').trim(),
+      bankBin: (body.bankBin || '').trim(),
+      bankAccountNo: (body.bankAccountNo || '').trim(),
+      bankAccountName: (body.bankAccountName || '').trim(),
     };
+
+    if (!/^\d{6}$/.test(sanitizedConfig.bankBin)) return NextResponse.json({error:'Mã BIN ngân hàng phải gồm 6 chữ số.'},{status:400,headers:NO_CACHE_HEADERS});
+    if (!sanitizedConfig.bankName) return NextResponse.json({error:'Vui lòng nhập tên ngân hàng.'},{status:400,headers:NO_CACHE_HEADERS});
+    if (Boolean(sanitizedConfig.bankAccountNo) !== Boolean(sanitizedConfig.bankAccountName)) return NextResponse.json({error:'Vui lòng nhập cả số tài khoản và tên chủ tài khoản, hoặc để trống cả hai.'},{status:400,headers:NO_CACHE_HEADERS});
+    if (sanitizedConfig.bankAccountNo && !/^[A-Za-z0-9]{6,19}$/.test(sanitizedConfig.bankAccountNo)) return NextResponse.json({error:'Số tài khoản VietQR phải có 6–19 chữ hoặc số.'},{status:400,headers:NO_CACHE_HEADERS});
+    if (sanitizedConfig.bankAccountName && sanitizedConfig.bankAccountName.length < 5) return NextResponse.json({error:'Tên chủ tài khoản cần ít nhất 5 ký tự.'},{status:400,headers:NO_CACHE_HEADERS});
 
     const saved = await saveSiteConfig(sanitizedConfig);
 

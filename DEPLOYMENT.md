@@ -6,6 +6,8 @@ Nhánh `codex/site-rebuild` chứa giao diện và luồng quản trị mới. W
 
 Trong Supabase, tạo hoặc lấy **server secret key** cho project đang chứa dữ liệu thật. Khóa cũ từng nằm trong lịch sử Git, nên cần thu hồi/đổi. Khóa ImgBB cũ cũng từng nằm trong lịch sử Git và cần đổi nếu tiếp tục dùng tải ảnh.
 
+Trong admin → Cấu hình website, điền số tài khoản và tên chủ tài khoản nhận tiền. ACB (BIN `970416`) là mặc định; có thể sửa cả tên ngân hàng và BIN. Khi hai ô tài khoản còn trống, khách chỉ thấy thanh toán khi nhận hàng. VietQR Quick Link giới hạn nội dung chuyển khoản 50 ký tự không dấu, vì vậy mã đơn và số điện thoại được giữ trọn, phần địa chỉ được cắt theo chỗ còn lại. Trang đơn vẫn hiển thị thông tin đối chiếu đầy đủ.
+
 Trong Vercel Project → Settings → Environment Variables, đặt các biến cho **Production**:
 
 | Biến | Giá trị |

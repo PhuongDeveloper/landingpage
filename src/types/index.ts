@@ -129,6 +129,10 @@ export interface SiteConfig {
   distilleryAddress: string;
   freeShippingThreshold: number;
   standardShippingFee: number;
+  bankName: string;
+  bankBin: string;
+  bankAccountNo: string;
+  bankAccountName: string;
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string;
