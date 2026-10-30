@@ -6,7 +6,6 @@ import {
   initialArticles,
   initialSiteConfig,
   initialCategories,
-  initialLeads,
 } from '@/data/initialData';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -54,7 +53,7 @@ function ensureLocalStore(): StoreData {
         products: [...initialProducts],
         categories: [...initialCategories],
         orders: [],
-        leads: [...initialLeads],
+        leads: [],
         articles: [...initialArticles],
         config: { ...initialSiteConfig },
       };
@@ -81,7 +80,7 @@ function ensureLocalStore(): StoreData {
         products: [...initialProducts],
         categories: [...initialCategories],
         orders: [],
-        leads: [...initialLeads],
+        leads: [],
         articles: [...initialArticles],
         config: { ...initialSiteConfig },
       };

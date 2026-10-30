@@ -1,4 +1,4 @@
-import { Product, Article, SiteConfig, CategoryItem, Lead } from '@/types';
+import { Product, Article, SiteConfig, CategoryItem } from '@/types';
 
 export const initialCategories: CategoryItem[] = [
   {
@@ -291,24 +291,3 @@ export const initialArticles: Article[] = [
   },
 ];
 
-export const initialLeads: Lead[] = [
-  {
-    id: 'lead-01',
-    name: 'Chị Mai Lan',
-    phone: '0912345678',
-    email: 'mailan.arch@gmail.com',
-    interest: 'Thư giãn & Khử mùi văn phòng',
-    message: 'Cần tư vấn bộ tinh dầu xông cho văn phòng kiến trúc khoảng 50m2.',
-    createdAt: '2026-10-18T08:30:00.000Z',
-    status: 'new',
-  },
-  {
-    id: 'lead-02',
-    name: 'Anh Trần Hùng',
-    phone: '0987654321',
-    interest: 'Tinh dầu ngủ ngon',
-    message: 'Mình bị mất ngủ lâu năm, muốn thử tinh dầu oải hương hoặc phối hương.',
-    createdAt: '2026-10-17T15:20:00.000Z',
-    status: 'contacted',
-  },
-];
