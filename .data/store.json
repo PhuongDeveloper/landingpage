@@ -258,37 +258,7 @@
       "paymentMethod": "cod"
     }
   ],
-  "leads": [
-    {
-      "id": "565e8a99-9e47-4256-a3b7-98d06a178d0e",
-      "name": "Nguyen Test",
-      "phone": "0900000000",
-      "email": "test@gmail.com",
-      "interest": "Tư vấn",
-      "message": "Test lead",
-      "createdAt": "2026-10-18T15:51:25.570Z",
-      "status": "new"
-    },
-    {
-      "id": "lead-01",
-      "name": "Chị Mai Lan",
-      "phone": "0912345678",
-      "email": "mailan.arch@gmail.com",
-      "interest": "Thư giãn & Khử mùi văn phòng",
-      "message": "Cần tư vấn bộ tinh dầu xông cho văn phòng kiến trúc khoảng 50m2.",
-      "createdAt": "2026-10-18T08:30:00.000Z",
-      "status": "new"
-    },
-    {
-      "id": "lead-02",
-      "name": "Anh Trần Hùng",
-      "phone": "0987654321",
-      "interest": "Tinh dầu ngủ ngon",
-      "message": "Mình bị mất ngủ lâu năm, muốn thử tinh dầu oải hương hoặc phối hương.",
-      "createdAt": "2026-10-17T15:20:00.000Z",
-      "status": "contacted"
-    }
-  ],
+  "leads": [],
   "articles": [
     {
       "id": "art-01",
