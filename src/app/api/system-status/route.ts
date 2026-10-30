@@ -1,0 +1,11 @@
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
+export function GET() {
+  return NextResponse.json({
+    supabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    anonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+    serverKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
+  }, { headers: { 'Cache-Control': 'no-store' } });
+}
