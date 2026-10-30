@@ -7,6 +7,11 @@ export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
   let database: Record<string, { status: string; code?: string; message?: string }> = {};
+  let networkErrorCode = '';
+  if (url && key) {
+    try { await fetch(url + '/rest/v1/products?select=id&limit=1', { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }); }
+    catch (error) { networkErrorCode = String((error as { cause?: { code?: string } }).cause?.code || (error as Error).name); }
+  }
   if (url && key) {
     try {
       const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -22,6 +27,8 @@ export async function GET() {
   }
   return NextResponse.json({
     supabaseUrl: Boolean(url),
+    supabaseHost: url ? new URL(url).hostname : '',
+    networkErrorCode,
     urlLooksPlaceholder: /placeholder|your.project|example/i.test(url),
     anonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
     serverKey: Boolean(key),
